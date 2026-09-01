@@ -1,0 +1,70 @@
+{
+  "schema_version": "0.1.0",
+  "path_analysis_id": "PATH-DEMO-001",
+  "graph_id": "GRAPH-DEMO-001",
+  "choke_points": [
+    {
+      "node_id": "a-jenkins-01:admin",
+      "asset_id": "a-jenkins-01",
+      "paths_through_fraction": 0.61,
+      "crown_jewels_cut_if_removed": [
+        "a-db-cust:data_admin",
+        "a-db-fin:data_admin",
+        "a-s3-backup:data_read"
+      ],
+      "reachable_cj_value_inr": 420000000.0
+    },
+    {
+      "node_id": "a-ad-01:admin",
+      "asset_id": "a-ad-01",
+      "paths_through_fraction": 0.44,
+      "crown_jewels_cut_if_removed": [
+        "a-db-fin:data_admin"
+      ],
+      "reachable_cj_value_inr": 180000000.0
+    }
+  ],
+  "crown_jewel_reach": [
+    {
+      "node_id": "a-db-cust:data_admin",
+      "asset_id": "a-db-cust",
+      "compromise_probability": 0.58,
+      "shortest_path_hops": 4,
+      "top_path_node_ids": [
+        "internet:none",
+        "a-web-01:user",
+        "a-jenkins-01:admin",
+        "a-ad-01:admin",
+        "a-db-cust:data_admin"
+      ]
+    },
+    {
+      "node_id": "a-db-fin:data_admin",
+      "asset_id": "a-db-fin",
+      "compromise_probability": 0.29,
+      "shortest_path_hops": 4,
+      "top_path_node_ids": [
+        "internet:none",
+        "a-web-01:user",
+        "a-jenkins-01:admin",
+        "a-ad-01:admin",
+        "a-db-fin:data_admin"
+      ]
+    },
+    {
+      "node_id": "a-s3-backup:data_read",
+      "asset_id": "a-s3-backup",
+      "compromise_probability": 0.41,
+      "shortest_path_hops": 5,
+      "top_path_node_ids": [
+        "internet:none",
+        "a-web-01:user",
+        "a-jenkins-01:admin",
+        "a-ad-01:admin",
+        "a-db-cust:data_admin",
+        "a-s3-backup:data_read"
+      ]
+    }
+  ],
+  "dead_end_node_fraction": 0.3
+}

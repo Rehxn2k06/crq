@@ -1,0 +1,567 @@
+{
+  "$defs": {
+    "AppliedControl": {
+      "properties": {
+        "control_id": {
+          "title": "Control Id",
+          "type": "string"
+        },
+        "applied_to_asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Applied To Asset Ids",
+          "type": "array"
+        },
+        "evidence_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Evidence Ref"
+        }
+      },
+      "required": [
+        "control_id",
+        "applied_to_asset_ids"
+      ],
+      "title": "AppliedControl",
+      "type": "object"
+    },
+    "Asset": {
+      "properties": {
+        "asset_id": {
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "hostname": {
+          "title": "Hostname",
+          "type": "string"
+        },
+        "asset_type": {
+          "$ref": "#/$defs/AssetType"
+        },
+        "business_unit": {
+          "title": "Business Unit",
+          "type": "string"
+        },
+        "internet_facing": {
+          "default": false,
+          "title": "Internet Facing",
+          "type": "boolean"
+        },
+        "revenue_dependency_inr_per_hour": {
+          "default": 0.0,
+          "title": "Revenue Dependency Inr Per Hour",
+          "type": "number"
+        },
+        "data_classes": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/DataClass"
+          },
+          "title": "Data Classes",
+          "type": "array"
+        },
+        "pii_records_held": {
+          "default": 0,
+          "title": "Pii Records Held",
+          "type": "integer"
+        },
+        "criticality_weight": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Criticality Weight",
+          "type": "number"
+        },
+        "tags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        }
+      },
+      "required": [
+        "asset_id",
+        "hostname",
+        "asset_type",
+        "business_unit"
+      ],
+      "title": "Asset",
+      "type": "object"
+    },
+    "AssetType": {
+      "enum": [
+        "server",
+        "workstation",
+        "database",
+        "network_device",
+        "saas",
+        "cloud_resource"
+      ],
+      "title": "AssetType",
+      "type": "string"
+    },
+    "DataClass": {
+      "enum": [
+        "pii",
+        "financial",
+        "credentials",
+        "intellectual_property",
+        "public"
+      ],
+      "title": "DataClass",
+      "type": "string"
+    },
+    "Dependency": {
+      "properties": {
+        "from_asset_id": {
+          "title": "From Asset Id",
+          "type": "string"
+        },
+        "to_asset_id": {
+          "title": "To Asset Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "network",
+            "data",
+            "service",
+            "trust"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "from_asset_id",
+        "to_asset_id",
+        "kind"
+      ],
+      "title": "Dependency",
+      "type": "object"
+    },
+    "Finding": {
+      "properties": {
+        "finding_id": {
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "asset_id": {
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "cve_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cve Id"
+        },
+        "cvss_base": {
+          "anyOf": [
+            {
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cvss Base"
+        },
+        "cvss_vector": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cvss Vector"
+        },
+        "epss": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Epss"
+        },
+        "kev": {
+          "default": false,
+          "title": "Kev",
+          "type": "boolean"
+        },
+        "grants_privilege": {
+          "$ref": "#/$defs/Privilege",
+          "default": "user"
+        },
+        "requires_privilege": {
+          "$ref": "#/$defs/Privilege",
+          "default": "none"
+        },
+        "source": {
+          "description": "trivy | openvas | prowler | wazuh | synthetic",
+          "title": "Source",
+          "type": "string"
+        },
+        "first_seen": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "First Seen"
+        },
+        "status": {
+          "default": "open",
+          "enum": [
+            "open",
+            "mitigated",
+            "accepted"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_id",
+        "asset_id",
+        "source"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "Identity": {
+      "properties": {
+        "identity_id": {
+          "title": "Identity Id",
+          "type": "string"
+        },
+        "home_asset_id": {
+          "title": "Home Asset Id",
+          "type": "string"
+        },
+        "privilege": {
+          "$ref": "#/$defs/Privilege"
+        },
+        "mfa_enabled": {
+          "default": false,
+          "title": "Mfa Enabled",
+          "type": "boolean"
+        },
+        "credential_reused_on": {
+          "default": [],
+          "description": "asset_ids where this credential also works. Lateral movement fuel.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Credential Reused On",
+          "type": "array"
+        }
+      },
+      "required": [
+        "identity_id",
+        "home_asset_id",
+        "privilege"
+      ],
+      "title": "Identity",
+      "type": "object"
+    },
+    "OrgProfile": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sector": {
+          "description": "VCDB/NAICS-ish label, e.g. 'finance', 'healthcare'",
+          "title": "Sector",
+          "type": "string"
+        },
+        "is_sebi_regulated": {
+          "default": false,
+          "title": "Is Sebi Regulated",
+          "type": "boolean"
+        },
+        "sebi_entity_class": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "MII | QRE | MID | SMALL | SELF_CERT",
+          "title": "Sebi Entity Class"
+        },
+        "annual_revenue_inr": {
+          "title": "Annual Revenue Inr",
+          "type": "number"
+        },
+        "employee_count": {
+          "title": "Employee Count",
+          "type": "integer"
+        },
+        "pii_records_count": {
+          "description": "Drives the DPDP + breach-response model",
+          "title": "Pii Records Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "annual_revenue_inr",
+        "employee_count",
+        "pii_records_count"
+      ],
+      "title": "OrgProfile",
+      "type": "object"
+    },
+    "Privilege": {
+      "enum": [
+        "none",
+        "user",
+        "admin",
+        "data_read",
+        "data_admin"
+      ],
+      "title": "Privilege",
+      "type": "string"
+    },
+    "Provenance": {
+      "description": "Shown in the UI. Never lie about this.",
+      "enum": [
+        "synthetic",
+        "scanner",
+        "mixed"
+      ],
+      "title": "Provenance",
+      "type": "string"
+    },
+    "TelemetryMetrics": {
+      "description": "Raw counters. Feeds the SEBI CCI parameters, which are literally ratios of these.",
+      "properties": {
+        "vulns_identified": {
+          "default": 0,
+          "title": "Vulns Identified",
+          "type": "integer"
+        },
+        "vulns_mitigated": {
+          "default": 0,
+          "title": "Vulns Mitigated",
+          "type": "integer"
+        },
+        "remote_users_total": {
+          "default": 0,
+          "title": "Remote Users Total",
+          "type": "integer"
+        },
+        "remote_users_with_mfa": {
+          "default": 0,
+          "title": "Remote Users With Mfa",
+          "type": "integer"
+        },
+        "infosec_budget_inr": {
+          "default": 0.0,
+          "title": "Infosec Budget Inr",
+          "type": "number"
+        },
+        "it_budget_inr": {
+          "default": 0.0,
+          "title": "It Budget Inr",
+          "type": "number"
+        },
+        "critical_systems_identified": {
+          "default": 0,
+          "title": "Critical Systems Identified",
+          "type": "integer"
+        },
+        "systems_integrated_with_soc": {
+          "default": 0,
+          "title": "Systems Integrated With Soc",
+          "type": "integer"
+        },
+        "total_it_systems": {
+          "default": 0,
+          "title": "Total It Systems",
+          "type": "integer"
+        },
+        "staff_total": {
+          "default": 0,
+          "title": "Staff Total",
+          "type": "integer"
+        },
+        "staff_security_trained": {
+          "default": 0,
+          "title": "Staff Security Trained",
+          "type": "integer"
+        },
+        "incidents_total": {
+          "default": 0,
+          "title": "Incidents Total",
+          "type": "integer"
+        },
+        "incidents_closed_in_sla": {
+          "default": 0,
+          "title": "Incidents Closed In Sla",
+          "type": "integer"
+        },
+        "assets_with_current_patch": {
+          "default": 0,
+          "title": "Assets With Current Patch",
+          "type": "integer"
+        },
+        "backups_tested_count": {
+          "default": 0,
+          "title": "Backups Tested Count",
+          "type": "integer"
+        },
+        "backups_total_count": {
+          "default": 0,
+          "title": "Backups Total Count",
+          "type": "integer"
+        }
+      },
+      "title": "TelemetryMetrics",
+      "type": "object"
+    }
+  },
+  "description": "The whole enterprise at one point in time. The only input to everything downstream.",
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "snapshot_id": {
+      "title": "Snapshot Id",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "org": {
+      "$ref": "#/$defs/OrgProfile"
+    },
+    "assets": {
+      "items": {
+        "$ref": "#/$defs/Asset"
+      },
+      "title": "Assets",
+      "type": "array"
+    },
+    "dependencies": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Dependency"
+      },
+      "title": "Dependencies",
+      "type": "array"
+    },
+    "identities": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Identity"
+      },
+      "title": "Identities",
+      "type": "array"
+    },
+    "findings": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Finding"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "existing_controls": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AppliedControl"
+      },
+      "title": "Existing Controls",
+      "type": "array"
+    },
+    "telemetry": {
+      "$ref": "#/$defs/TelemetryMetrics",
+      "default": {
+        "vulns_identified": 0,
+        "vulns_mitigated": 0,
+        "remote_users_total": 0,
+        "remote_users_with_mfa": 0,
+        "infosec_budget_inr": 0.0,
+        "it_budget_inr": 0.0,
+        "critical_systems_identified": 0,
+        "systems_integrated_with_soc": 0,
+        "total_it_systems": 0,
+        "staff_total": 0,
+        "staff_security_trained": 0,
+        "incidents_total": 0,
+        "incidents_closed_in_sla": 0,
+        "assets_with_current_patch": 0,
+        "backups_tested_count": 0,
+        "backups_total_count": 0
+      }
+    }
+  },
+  "required": [
+    "snapshot_id",
+    "created_at",
+    "provenance",
+    "org",
+    "assets"
+  ],
+  "title": "Snapshot",
+  "type": "object"
+}

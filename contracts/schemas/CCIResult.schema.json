@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "CCIParameter": {
+      "properties": {
+        "param_id": {
+          "description": "CCI-01 .. CCI-23",
+          "title": "Param Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "weight_pct": {
+          "title": "Weight Pct",
+          "type": "number"
+        },
+        "target_pct": {
+          "title": "Target Pct",
+          "type": "number"
+        },
+        "numerator": {
+          "title": "Numerator",
+          "type": "number"
+        },
+        "denominator": {
+          "title": "Denominator",
+          "type": "number"
+        },
+        "ratio_pct": {
+          "title": "Ratio Pct",
+          "type": "number"
+        },
+        "capped_score_pct": {
+          "description": "min(ratio/target, 1.0) * 100",
+          "title": "Capped Score Pct",
+          "type": "number"
+        },
+        "weighted_contribution": {
+          "title": "Weighted Contribution",
+          "type": "number"
+        },
+        "evidence_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "clause_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "CSCRF Annexure-K row",
+          "title": "Clause Ref"
+        }
+      },
+      "required": [
+        "param_id",
+        "name",
+        "weight_pct",
+        "target_pct",
+        "numerator",
+        "denominator",
+        "ratio_pct",
+        "capped_score_pct",
+        "weighted_contribution"
+      ],
+      "title": "CCIParameter",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "cci_result_id": {
+      "title": "Cci Result Id",
+      "type": "string"
+    },
+    "snapshot_id": {
+      "title": "Snapshot Id",
+      "type": "string"
+    },
+    "score": {
+      "description": "Two decimal places, per SEBI June 2025 FAQ",
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "title": "Score",
+      "type": "number"
+    },
+    "band": {
+      "enum": [
+        "Exceptional",
+        "Optimal",
+        "Manageable",
+        "Developing",
+        "Bare Minimum",
+        "Fail"
+      ],
+      "title": "Band",
+      "type": "string"
+    },
+    "meets_minimum_for_entity_class": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Meets Minimum For Entity Class"
+    },
+    "parameters": {
+      "items": {
+        "$ref": "#/$defs/CCIParameter"
+      },
+      "title": "Parameters",
+      "type": "array"
+    }
+  },
+  "required": [
+    "cci_result_id",
+    "snapshot_id",
+    "score",
+    "band",
+    "parameters"
+  ],
+  "title": "CCIResult",
+  "type": "object"
+}

@@ -1,0 +1,137 @@
+{
+  "schema_version": "0.1.0",
+  "loss_result_id": "LOSS-DEMO-001",
+  "graph_id": "GRAPH-DEMO-001",
+  "path_analysis_id": "PATH-DEMO-001",
+  "config": {
+    "trials": 25000,
+    "seed": 42,
+    "horizon_days": 365
+  },
+  "eal_inr": 98400000.0,
+  "median_inr": 42000000.0,
+  "p95_inr": 386000000.0,
+  "p99_inr": 942000000.0,
+  "exceedance_curve": [
+    {
+      "loss_inr": 10000000.0,
+      "probability_of_exceeding": 0.72
+    },
+    {
+      "loss_inr": 50000000.0,
+      "probability_of_exceeding": 0.41
+    },
+    {
+      "loss_inr": 100000000.0,
+      "probability_of_exceeding": 0.24
+    },
+    {
+      "loss_inr": 250000000.0,
+      "probability_of_exceeding": 0.11
+    },
+    {
+      "loss_inr": 500000000.0,
+      "probability_of_exceeding": 0.05
+    },
+    {
+      "loss_inr": 1000000000.0,
+      "probability_of_exceeding": 0.018
+    },
+    {
+      "loss_inr": 2500000000.0,
+      "probability_of_exceeding": 0.004
+    }
+  ],
+  "component_split_inr": {
+    "downtime": 21000000.0,
+    "breach_response": 34000000.0,
+    "regulatory": 29000000.0,
+    "reputational": 14400000.0
+  },
+  "scenario_contributions": [
+    {
+      "scenario_id": "sc-pii-exfil",
+      "name": "Mass PII exfiltration (customer DB)",
+      "triggering_node_ids": [
+        "a-db-cust:data_admin"
+      ],
+      "annual_frequency": 0.58,
+      "eal_inr": 61000000.0,
+      "share_of_total": 0.62
+    },
+    {
+      "scenario_id": "sc-fin-tamper",
+      "name": "Finance DB compromise",
+      "triggering_node_ids": [
+        "a-db-fin:data_admin"
+      ],
+      "annual_frequency": 0.29,
+      "eal_inr": 23500000.0,
+      "share_of_total": 0.24
+    },
+    {
+      "scenario_id": "sc-backup-exfil",
+      "name": "Backup bucket exfiltration",
+      "triggering_node_ids": [
+        "a-s3-backup:data_read"
+      ],
+      "annual_frequency": 0.41,
+      "eal_inr": 13900000.0,
+      "share_of_total": 0.14
+    }
+  ],
+  "top_drivers": [
+    {
+      "ref_type": "node",
+      "ref_id": "a-jenkins-01:admin",
+      "label": "jenkins-prod-01 (admin)",
+      "attributed_eal_inr": 50200000.0
+    },
+    {
+      "ref_type": "node",
+      "ref_id": "a-ad-01:admin",
+      "label": "dc-01 (domain admin)",
+      "attributed_eal_inr": 28800000.0
+    },
+    {
+      "ref_type": "finding",
+      "ref_id": "f-002",
+      "label": "CVE-2024-21887 on vpn-01",
+      "attributed_eal_inr": 11000000.0
+    }
+  ],
+  "assumptions": [
+    {
+      "key": "reputational_churn_rate",
+      "value": 0.012,
+      "unit": "fraction of annual revenue",
+      "source": "Team estimate. NO defensible public source exists.",
+      "confidence": "guess",
+      "sensitivity_rank": 2
+    },
+    {
+      "key": "severity_lognormal_sigma",
+      "value": 2.1,
+      "unit": "log-scale",
+      "source": "Cyentia IRIS 2025 median/p95 fit",
+      "confidence": "public_data",
+      "sensitivity_rank": 1
+    },
+    {
+      "key": "breach_response_cost_per_record_inr",
+      "value": 185.0,
+      "unit": "INR/record",
+      "source": "IBM CODB India 2025, adjusted to median",
+      "confidence": "public_data",
+      "sensitivity_rank": 3
+    },
+    {
+      "key": "dpdp_penalty_applied_probability",
+      "value": 0.25,
+      "unit": "probability",
+      "source": "No enforcement history yet under DPDP",
+      "confidence": "estimated",
+      "sensitivity_rank": 4
+    }
+  ]
+}

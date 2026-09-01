@@ -1,0 +1,56 @@
+{
+  "schema_version": "0.1.0",
+  "target_ref": "loss_driver:LOSS-DEMO-001:a-jenkins-01:admin",
+  "steps": [
+    {
+      "stage": "ingest",
+      "artifact_id": "SNAP-DEMO-001",
+      "element_id": "f-003",
+      "label": "Finding CVE-2024-23897 on jenkins-prod-01",
+      "detail": "Reported by trivy on 2026-09-01. CVSS 9.8.",
+      "inputs": []
+    },
+    {
+      "stage": "enrich",
+      "artifact_id": "SNAP-DEMO-001",
+      "element_id": "f-003",
+      "label": "EPSS 0.42, present in CISA KEV",
+      "detail": "EPSS v4 daily feed. KEV catalogue.",
+      "inputs": [
+        "f-003"
+      ]
+    },
+    {
+      "stage": "graph",
+      "artifact_id": "GRAPH-DEMO-001",
+      "element_id": "e-03",
+      "label": "Edge web-01:user -> jenkins-01:admin, p=0.42",
+      "detail": "Rule R1 remote exploit. Probability from EPSS.",
+      "inputs": [
+        "f-003"
+      ]
+    },
+    {
+      "stage": "paths",
+      "artifact_id": "PATH-DEMO-001",
+      "element_id": "a-jenkins-01:admin",
+      "label": "Choke point: 61% of crown-jewel paths",
+      "detail": "Removing this node disconnects all three crown jewels.",
+      "inputs": [
+        "e-03",
+        "e-06",
+        "e-08"
+      ]
+    },
+    {
+      "stage": "loss",
+      "artifact_id": "LOSS-DEMO-001",
+      "element_id": "a-jenkins-01:admin",
+      "label": "Attributed EAL INR 5.02 crore",
+      "detail": "Shapley-style attribution across 25,000 trials, seed 42.",
+      "inputs": [
+        "a-jenkins-01:admin"
+      ]
+    }
+  ]
+}

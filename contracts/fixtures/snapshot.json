@@ -1,0 +1,423 @@
+{
+  "schema_version": "0.1.0",
+  "snapshot_id": "SNAP-DEMO-001",
+  "created_at": "2026-09-01T09:00:00Z",
+  "provenance": "synthetic",
+  "org": {
+    "name": "Meridian Broking Pvt Ltd",
+    "sector": "finance",
+    "is_sebi_regulated": true,
+    "sebi_entity_class": "QRE",
+    "annual_revenue_inr": 8400000000.0,
+    "employee_count": 420,
+    "pii_records_count": 1200000
+  },
+  "assets": [
+    {
+      "asset_id": "a-web-01",
+      "hostname": "web-01",
+      "asset_type": "server",
+      "business_unit": "digital",
+      "internet_facing": true,
+      "revenue_dependency_inr_per_hour": 180000.0,
+      "data_classes": [
+        "public"
+      ],
+      "pii_records_held": 0,
+      "criticality_weight": 0.5,
+      "tags": [
+        "dmz"
+      ]
+    },
+    {
+      "asset_id": "a-web-02",
+      "hostname": "web-02",
+      "asset_type": "server",
+      "business_unit": "digital",
+      "internet_facing": true,
+      "revenue_dependency_inr_per_hour": 180000.0,
+      "data_classes": [
+        "public"
+      ],
+      "pii_records_held": 0,
+      "criticality_weight": 0.5,
+      "tags": [
+        "dmz"
+      ]
+    },
+    {
+      "asset_id": "a-vpn-01",
+      "hostname": "vpn-01",
+      "asset_type": "network_device",
+      "business_unit": "it",
+      "internet_facing": true,
+      "revenue_dependency_inr_per_hour": 0.0,
+      "data_classes": [],
+      "pii_records_held": 0,
+      "criticality_weight": 0.6,
+      "tags": [
+        "dmz"
+      ]
+    },
+    {
+      "asset_id": "a-jenkins-01",
+      "hostname": "jenkins-prod-01",
+      "asset_type": "server",
+      "business_unit": "engineering",
+      "internet_facing": false,
+      "revenue_dependency_inr_per_hour": 40000.0,
+      "data_classes": [
+        "credentials"
+      ],
+      "pii_records_held": 0,
+      "criticality_weight": 0.8,
+      "tags": [
+        "internal"
+      ]
+    },
+    {
+      "asset_id": "a-app-01",
+      "hostname": "app-01",
+      "asset_type": "server",
+      "business_unit": "digital",
+      "internet_facing": false,
+      "revenue_dependency_inr_per_hour": 320000.0,
+      "data_classes": [],
+      "pii_records_held": 0,
+      "criticality_weight": 0.7,
+      "tags": [
+        "internal"
+      ]
+    },
+    {
+      "asset_id": "a-file-01",
+      "hostname": "file-01",
+      "asset_type": "server",
+      "business_unit": "operations",
+      "internet_facing": false,
+      "revenue_dependency_inr_per_hour": 0.0,
+      "data_classes": [
+        "intellectual_property"
+      ],
+      "pii_records_held": 0,
+      "criticality_weight": 0.5,
+      "tags": [
+        "internal"
+      ]
+    },
+    {
+      "asset_id": "a-ad-01",
+      "hostname": "dc-01",
+      "asset_type": "server",
+      "business_unit": "it",
+      "internet_facing": false,
+      "revenue_dependency_inr_per_hour": 0.0,
+      "data_classes": [
+        "credentials"
+      ],
+      "pii_records_held": 0,
+      "criticality_weight": 0.95,
+      "tags": [
+        "internal",
+        "identity"
+      ]
+    },
+    {
+      "asset_id": "a-ws-01",
+      "hostname": "ws-fin-01",
+      "asset_type": "workstation",
+      "business_unit": "finance",
+      "internet_facing": false,
+      "revenue_dependency_inr_per_hour": 0.0,
+      "data_classes": [],
+      "pii_records_held": 0,
+      "criticality_weight": 0.3,
+      "tags": []
+    },
+    {
+      "asset_id": "a-ws-02",
+      "hostname": "ws-eng-01",
+      "asset_type": "workstation",
+      "business_unit": "engineering",
+      "internet_facing": false,
+      "revenue_dependency_inr_per_hour": 0.0,
+      "data_classes": [],
+      "pii_records_held": 0,
+      "criticality_weight": 0.3,
+      "tags": []
+    },
+    {
+      "asset_id": "a-db-cust",
+      "hostname": "db-customer",
+      "asset_type": "database",
+      "business_unit": "digital",
+      "internet_facing": false,
+      "revenue_dependency_inr_per_hour": 450000.0,
+      "data_classes": [
+        "pii",
+        "financial"
+      ],
+      "pii_records_held": 1200000,
+      "criticality_weight": 1.0,
+      "tags": [
+        "crown_jewel"
+      ]
+    },
+    {
+      "asset_id": "a-db-fin",
+      "hostname": "db-finance",
+      "asset_type": "database",
+      "business_unit": "finance",
+      "internet_facing": false,
+      "revenue_dependency_inr_per_hour": 200000.0,
+      "data_classes": [
+        "financial"
+      ],
+      "pii_records_held": 0,
+      "criticality_weight": 0.9,
+      "tags": [
+        "crown_jewel"
+      ]
+    },
+    {
+      "asset_id": "a-s3-backup",
+      "hostname": "backup-bucket",
+      "asset_type": "cloud_resource",
+      "business_unit": "it",
+      "internet_facing": false,
+      "revenue_dependency_inr_per_hour": 0.0,
+      "data_classes": [
+        "pii"
+      ],
+      "pii_records_held": 1200000,
+      "criticality_weight": 0.85,
+      "tags": [
+        "crown_jewel"
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from_asset_id": "a-web-01",
+      "to_asset_id": "a-app-01",
+      "kind": "service",
+      "note": null
+    },
+    {
+      "from_asset_id": "a-web-02",
+      "to_asset_id": "a-app-01",
+      "kind": "service",
+      "note": null
+    },
+    {
+      "from_asset_id": "a-app-01",
+      "to_asset_id": "a-db-cust",
+      "kind": "data",
+      "note": null
+    },
+    {
+      "from_asset_id": "a-vpn-01",
+      "to_asset_id": "a-ws-02",
+      "kind": "network",
+      "note": null
+    },
+    {
+      "from_asset_id": "a-jenkins-01",
+      "to_asset_id": "a-app-01",
+      "kind": "trust",
+      "note": null
+    },
+    {
+      "from_asset_id": "a-ws-01",
+      "to_asset_id": "a-db-fin",
+      "kind": "data",
+      "note": null
+    },
+    {
+      "from_asset_id": "a-ad-01",
+      "to_asset_id": "a-db-cust",
+      "kind": "trust",
+      "note": null
+    },
+    {
+      "from_asset_id": "a-db-cust",
+      "to_asset_id": "a-s3-backup",
+      "kind": "data",
+      "note": null
+    }
+  ],
+  "identities": [
+    {
+      "identity_id": "i-svc-deploy",
+      "home_asset_id": "a-jenkins-01",
+      "privilege": "admin",
+      "mfa_enabled": false,
+      "credential_reused_on": [
+        "a-app-01",
+        "a-web-01",
+        "a-web-02"
+      ]
+    },
+    {
+      "identity_id": "i-dba",
+      "home_asset_id": "a-ws-01",
+      "privilege": "data_admin",
+      "mfa_enabled": false,
+      "credential_reused_on": [
+        "a-db-fin",
+        "a-db-cust"
+      ]
+    },
+    {
+      "identity_id": "i-eng",
+      "home_asset_id": "a-ws-02",
+      "privilege": "user",
+      "mfa_enabled": true,
+      "credential_reused_on": [
+        "a-jenkins-01"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "f-001",
+      "asset_id": "a-web-01",
+      "cve_id": "CVE-2024-27198",
+      "cvss_base": 9.8,
+      "cvss_vector": null,
+      "epss": 0.94,
+      "kev": true,
+      "grants_privilege": "user",
+      "requires_privilege": "none",
+      "source": "trivy",
+      "first_seen": "2026-09-01T09:00:00Z",
+      "status": "open"
+    },
+    {
+      "finding_id": "f-002",
+      "asset_id": "a-vpn-01",
+      "cve_id": "CVE-2024-21887",
+      "cvss_base": 9.1,
+      "cvss_vector": null,
+      "epss": 0.87,
+      "kev": true,
+      "grants_privilege": "admin",
+      "requires_privilege": "none",
+      "source": "openvas",
+      "first_seen": "2026-09-01T09:00:00Z",
+      "status": "open"
+    },
+    {
+      "finding_id": "f-003",
+      "asset_id": "a-jenkins-01",
+      "cve_id": "CVE-2024-23897",
+      "cvss_base": 9.8,
+      "cvss_vector": null,
+      "epss": 0.42,
+      "kev": true,
+      "grants_privilege": "admin",
+      "requires_privilege": "none",
+      "source": "trivy",
+      "first_seen": "2026-09-01T09:00:00Z",
+      "status": "open"
+    },
+    {
+      "finding_id": "f-004",
+      "asset_id": "a-ad-01",
+      "cve_id": "CVE-2021-42287",
+      "cvss_base": 8.8,
+      "cvss_vector": null,
+      "epss": 0.31,
+      "kev": true,
+      "grants_privilege": "admin",
+      "requires_privilege": "user",
+      "source": "openvas",
+      "first_seen": "2026-09-01T09:00:00Z",
+      "status": "open"
+    },
+    {
+      "finding_id": "f-005",
+      "asset_id": "a-app-01",
+      "cve_id": "CVE-2023-4863",
+      "cvss_base": 8.8,
+      "cvss_vector": null,
+      "epss": 0.09,
+      "kev": false,
+      "grants_privilege": "user",
+      "requires_privilege": "none",
+      "source": "trivy",
+      "first_seen": "2026-09-01T09:00:00Z",
+      "status": "open"
+    },
+    {
+      "finding_id": "f-006",
+      "asset_id": "a-s3-backup",
+      "cve_id": null,
+      "cvss_base": 7.5,
+      "cvss_vector": null,
+      "epss": null,
+      "kev": false,
+      "grants_privilege": "data_read",
+      "requires_privilege": "none",
+      "source": "prowler",
+      "first_seen": "2026-09-01T09:00:00Z",
+      "status": "open"
+    },
+    {
+      "finding_id": "f-007",
+      "asset_id": "a-ws-02",
+      "cve_id": "CVE-2024-38063",
+      "cvss_base": 9.8,
+      "cvss_vector": null,
+      "epss": 0.12,
+      "kev": false,
+      "grants_privilege": "user",
+      "requires_privilege": "none",
+      "source": "wazuh",
+      "first_seen": "2026-09-01T09:00:00Z",
+      "status": "open"
+    },
+    {
+      "finding_id": "f-008",
+      "asset_id": "a-db-cust",
+      "cve_id": "CVE-2024-1597",
+      "cvss_base": 9.8,
+      "cvss_vector": null,
+      "epss": 0.21,
+      "kev": false,
+      "grants_privilege": "data_admin",
+      "requires_privilege": "user",
+      "source": "openvas",
+      "first_seen": "2026-09-01T09:00:00Z",
+      "status": "open"
+    }
+  ],
+  "existing_controls": [
+    {
+      "control_id": "ctl-edr",
+      "applied_to_asset_ids": [
+        "a-ws-01",
+        "a-ws-02"
+      ],
+      "evidence_ref": null
+    }
+  ],
+  "telemetry": {
+    "vulns_identified": 340,
+    "vulns_mitigated": 248,
+    "remote_users_total": 180,
+    "remote_users_with_mfa": 126,
+    "infosec_budget_inr": 18000000.0,
+    "it_budget_inr": 240000000.0,
+    "critical_systems_identified": 6,
+    "systems_integrated_with_soc": 9,
+    "total_it_systems": 12,
+    "staff_total": 420,
+    "staff_security_trained": 310,
+    "incidents_total": 54,
+    "incidents_closed_in_sla": 41,
+    "assets_with_current_patch": 8,
+    "backups_tested_count": 2,
+    "backups_total_count": 4
+  }
+}

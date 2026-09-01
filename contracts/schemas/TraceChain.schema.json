@@ -1,0 +1,70 @@
+{
+  "$defs": {
+    "TraceStep": {
+      "properties": {
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "element_id": {
+          "title": "Element Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "inputs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Inputs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "stage",
+        "artifact_id",
+        "element_id",
+        "label",
+        "detail"
+      ],
+      "title": "TraceStep",
+      "type": "object"
+    }
+  },
+  "description": "Powers the 'why is this number what it is' panel. The whole pitch depends on this working.",
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "target_ref": {
+      "title": "Target Ref",
+      "type": "string"
+    },
+    "steps": {
+      "items": {
+        "$ref": "#/$defs/TraceStep"
+      },
+      "title": "Steps",
+      "type": "array"
+    }
+  },
+  "required": [
+    "target_ref",
+    "steps"
+  ],
+  "title": "TraceChain",
+  "type": "object"
+}

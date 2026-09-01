@@ -1,0 +1,97 @@
+[
+  {
+    "control_id": "ctl-patch-kev",
+    "name": "Emergency KEV patch programme",
+    "description": "30-day SLA on all CISA KEV vulnerabilities",
+    "nist_800_53_ref": "SI-2",
+    "cis_control_ref": "7.4",
+    "cost_inr_per_year": 1800000.0,
+    "cost_model": "flat",
+    "blocks_technique_ids": [],
+    "blocks_finding_predicate": "kev==true",
+    "effectiveness": 0.85,
+    "effectiveness_source": "Assumed patch compliance rate",
+    "cost_source": "2 FTE eng-months + tooling, team estimate"
+  },
+  {
+    "control_id": "ctl-mfa-priv",
+    "name": "MFA on all privileged accounts",
+    "description": "Phishing-resistant MFA for admin and service identities",
+    "nist_800_53_ref": "IA-2",
+    "cis_control_ref": "6.5",
+    "cost_inr_per_year": 960000.0,
+    "cost_model": "per_user",
+    "blocks_technique_ids": [
+      "T1078"
+    ],
+    "blocks_finding_predicate": null,
+    "effectiveness": 0.8,
+    "effectiveness_source": "Microsoft 2023 MFA efficacy claim",
+    "cost_source": "Entra P2 list price INR 800/user/mo"
+  },
+  {
+    "control_id": "ctl-segment-ci",
+    "name": "Network segmentation of CI/CD tier",
+    "description": "Isolate Jenkins from web and identity tiers",
+    "nist_800_53_ref": "SC-7",
+    "cis_control_ref": "12.2",
+    "cost_inr_per_year": 3200000.0,
+    "cost_model": "flat",
+    "blocks_technique_ids": [
+      "T1210",
+      "T1021"
+    ],
+    "blocks_finding_predicate": null,
+    "effectiveness": 0.7,
+    "effectiveness_source": "Assumed path-cut effectiveness",
+    "cost_source": "Firewall + 1 FTE quarter, team estimate"
+  },
+  {
+    "control_id": "ctl-pam",
+    "name": "Privileged access management",
+    "description": "Vault service credentials, remove standing reuse",
+    "nist_800_53_ref": "AC-6",
+    "cis_control_ref": "5.4",
+    "cost_inr_per_year": 4200000.0,
+    "cost_model": "flat",
+    "blocks_technique_ids": [
+      "T1078"
+    ],
+    "blocks_finding_predicate": null,
+    "effectiveness": 0.75,
+    "effectiveness_source": "Assumed credential-reuse elimination",
+    "cost_source": "CyberArk mid-tier India quote, team estimate"
+  },
+  {
+    "control_id": "ctl-waf",
+    "name": "WAF on internet-facing tier",
+    "description": "Managed WAF in front of web-01 and web-02",
+    "nist_800_53_ref": "SC-7",
+    "cis_control_ref": "13.10",
+    "cost_inr_per_year": 1400000.0,
+    "cost_model": "flat",
+    "blocks_technique_ids": [
+      "T1190"
+    ],
+    "blocks_finding_predicate": null,
+    "effectiveness": 0.55,
+    "effectiveness_source": "Assumed exploit-blocking rate",
+    "cost_source": "Cloudflare Business tier, published pricing"
+  },
+  {
+    "control_id": "ctl-db-monitor",
+    "name": "Database activity monitoring",
+    "description": "Alert on bulk reads from customer and finance DBs",
+    "nist_800_53_ref": "AU-6",
+    "cis_control_ref": "8.11",
+    "cost_inr_per_year": 2600000.0,
+    "cost_model": "flat",
+    "blocks_technique_ids": [
+      "T1530"
+    ],
+    "blocks_finding_predicate": null,
+    "effectiveness": 0.45,
+    "effectiveness_source": "Detection reduces dwell, not access",
+    "cost_source": "Team estimate, open-source + 0.5 FTE"
+  }
+]

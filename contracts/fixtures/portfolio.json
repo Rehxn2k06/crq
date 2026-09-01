@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "portfolio_id": "PORT-DEMO-001",
+  "loss_result_id": "LOSS-DEMO-001",
+  "budget_inr": 10000000.0,
+  "method": "lazy_greedy",
+  "selected": [
+    {
+      "control_id": "ctl-segment-ci",
+      "name": "Network segmentation of CI/CD tier",
+      "applied_to_asset_ids": [
+        "a-jenkins-01"
+      ],
+      "cost_inr": 3200000.0,
+      "delta_eal_inr": 41800000.0,
+      "roi_ratio": 13.06,
+      "selection_rank": 1,
+      "reason": "Cuts the choke point carrying 61% of crown-jewel paths"
+    },
+    {
+      "control_id": "ctl-mfa-priv",
+      "name": "MFA on all privileged accounts",
+      "applied_to_asset_ids": [
+        "a-jenkins-01",
+        "a-ad-01",
+        "a-ws-01"
+      ],
+      "cost_inr": 960000.0,
+      "delta_eal_inr": 16400000.0,
+      "roi_ratio": 17.08,
+      "selection_rank": 2,
+      "reason": "Breaks remaining credential-reuse edges after segmentation"
+    },
+    {
+      "control_id": "ctl-patch-kev",
+      "name": "Emergency KEV patch programme",
+      "applied_to_asset_ids": [
+        "a-web-01",
+        "a-vpn-01",
+        "a-ad-01"
+      ],
+      "cost_inr": 1800000.0,
+      "delta_eal_inr": 10200000.0,
+      "roi_ratio": 5.67,
+      "selection_rank": 3,
+      "reason": "Removes both internet-facing entry edges"
+    },
+    {
+      "control_id": "ctl-waf",
+      "name": "WAF on internet-facing tier",
+      "applied_to_asset_ids": [
+        "a-web-01",
+        "a-web-02"
+      ],
+      "cost_inr": 1400000.0,
+      "delta_eal_inr": 3100000.0,
+      "roi_ratio": 2.21,
+      "selection_rank": 4,
+      "reason": "Residual entry-path coverage after patching"
+    }
+  ],
+  "total_cost_inr": 7360000.0,
+  "baseline_eal_inr": 98400000.0,
+  "residual_eal_inr": 26900000.0,
+  "risk_reduction_inr": 71500000.0,
+  "rosi": 8.72,
+  "pareto_curve": [
+    {
+      "budget_inr": 2500000.0,
+      "residual_eal_inr": 56600000.0,
+      "control_count": 1
+    },
+    {
+      "budget_inr": 5000000.0,
+      "residual_eal_inr": 37100000.0,
+      "control_count": 2
+    },
+    {
+      "budget_inr": 7500000.0,
+      "residual_eal_inr": 26900000.0,
+      "control_count": 4
+    },
+    {
+      "budget_inr": 10000000.0,
+      "residual_eal_inr": 26900000.0,
+      "control_count": 4
+    },
+    {
+      "budget_inr": 15000000.0,
+      "residual_eal_inr": 21800000.0,
+      "control_count": 5
+    },
+    {
+      "budget_inr": 20000000.0,
+      "residual_eal_inr": 19400000.0,
+      "control_count": 6
+    }
+  ],
+  "optimality_gap": 0.031,
+  "solve_ms": 412.0
+}

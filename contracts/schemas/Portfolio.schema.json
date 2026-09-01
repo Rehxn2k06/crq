@@ -1,0 +1,175 @@
+{
+  "$defs": {
+    "ParetoPoint": {
+      "properties": {
+        "budget_inr": {
+          "title": "Budget Inr",
+          "type": "number"
+        },
+        "residual_eal_inr": {
+          "title": "Residual Eal Inr",
+          "type": "number"
+        },
+        "control_count": {
+          "title": "Control Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "budget_inr",
+        "residual_eal_inr",
+        "control_count"
+      ],
+      "title": "ParetoPoint",
+      "type": "object"
+    },
+    "SelectedControl": {
+      "properties": {
+        "control_id": {
+          "title": "Control Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "applied_to_asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Applied To Asset Ids",
+          "type": "array"
+        },
+        "cost_inr": {
+          "title": "Cost Inr",
+          "type": "number"
+        },
+        "delta_eal_inr": {
+          "description": "Marginal, computed in selection order. Not standalone.",
+          "title": "Delta Eal Inr",
+          "type": "number"
+        },
+        "roi_ratio": {
+          "description": "delta_eal_inr / cost_inr",
+          "title": "Roi Ratio",
+          "type": "number"
+        },
+        "selection_rank": {
+          "title": "Selection Rank",
+          "type": "integer"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "control_id",
+        "name",
+        "applied_to_asset_ids",
+        "cost_inr",
+        "delta_eal_inr",
+        "roi_ratio",
+        "selection_rank",
+        "reason"
+      ],
+      "title": "SelectedControl",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "portfolio_id": {
+      "title": "Portfolio Id",
+      "type": "string"
+    },
+    "loss_result_id": {
+      "title": "Loss Result Id",
+      "type": "string"
+    },
+    "budget_inr": {
+      "title": "Budget Inr",
+      "type": "number"
+    },
+    "method": {
+      "enum": [
+        "lazy_greedy",
+        "milp"
+      ],
+      "title": "Method",
+      "type": "string"
+    },
+    "selected": {
+      "items": {
+        "$ref": "#/$defs/SelectedControl"
+      },
+      "title": "Selected",
+      "type": "array"
+    },
+    "total_cost_inr": {
+      "title": "Total Cost Inr",
+      "type": "number"
+    },
+    "baseline_eal_inr": {
+      "title": "Baseline Eal Inr",
+      "type": "number"
+    },
+    "residual_eal_inr": {
+      "title": "Residual Eal Inr",
+      "type": "number"
+    },
+    "risk_reduction_inr": {
+      "title": "Risk Reduction Inr",
+      "type": "number"
+    },
+    "rosi": {
+      "description": "(risk_reduction - cost) / cost",
+      "title": "Rosi",
+      "type": "number"
+    },
+    "pareto_curve": {
+      "items": {
+        "$ref": "#/$defs/ParetoPoint"
+      },
+      "title": "Pareto Curve",
+      "type": "array"
+    },
+    "optimality_gap": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Set when greedy is compared to MILP",
+      "title": "Optimality Gap"
+    },
+    "solve_ms": {
+      "title": "Solve Ms",
+      "type": "number"
+    }
+  },
+  "required": [
+    "portfolio_id",
+    "loss_result_id",
+    "budget_inr",
+    "method",
+    "selected",
+    "total_cost_inr",
+    "baseline_eal_inr",
+    "residual_eal_inr",
+    "risk_reduction_inr",
+    "rosi",
+    "pareto_curve",
+    "solve_ms"
+  ],
+  "title": "Portfolio",
+  "type": "object"
+}

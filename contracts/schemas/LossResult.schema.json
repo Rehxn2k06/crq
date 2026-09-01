@@ -1,0 +1,293 @@
+{
+  "$defs": {
+    "Assumption": {
+      "description": "Glass-box requirement. Every soft input is declared here and shown in the UI.",
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Value"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "confidence": {
+          "enum": [
+            "measured",
+            "public_data",
+            "estimated",
+            "guess"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "sensitivity_rank": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1 = moves the answer most",
+          "title": "Sensitivity Rank"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "source",
+        "confidence"
+      ],
+      "title": "Assumption",
+      "type": "object"
+    },
+    "ExceedancePoint": {
+      "properties": {
+        "loss_inr": {
+          "title": "Loss Inr",
+          "type": "number"
+        },
+        "probability_of_exceeding": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Probability Of Exceeding",
+          "type": "number"
+        }
+      },
+      "required": [
+        "loss_inr",
+        "probability_of_exceeding"
+      ],
+      "title": "ExceedancePoint",
+      "type": "object"
+    },
+    "LossComponent": {
+      "enum": [
+        "downtime",
+        "breach_response",
+        "regulatory",
+        "reputational"
+      ],
+      "title": "LossComponent",
+      "type": "string"
+    },
+    "LossDriver": {
+      "properties": {
+        "ref_type": {
+          "enum": [
+            "node",
+            "finding",
+            "asset"
+          ],
+          "title": "Ref Type",
+          "type": "string"
+        },
+        "ref_id": {
+          "title": "Ref Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "attributed_eal_inr": {
+          "title": "Attributed Eal Inr",
+          "type": "number"
+        }
+      },
+      "required": [
+        "ref_type",
+        "ref_id",
+        "label",
+        "attributed_eal_inr"
+      ],
+      "title": "LossDriver",
+      "type": "object"
+    },
+    "ScenarioContribution": {
+      "properties": {
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "triggering_node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Triggering Node Ids",
+          "type": "array"
+        },
+        "annual_frequency": {
+          "title": "Annual Frequency",
+          "type": "number"
+        },
+        "eal_inr": {
+          "title": "Eal Inr",
+          "type": "number"
+        },
+        "share_of_total": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Share Of Total",
+          "type": "number"
+        }
+      },
+      "required": [
+        "scenario_id",
+        "name",
+        "triggering_node_ids",
+        "annual_frequency",
+        "eal_inr",
+        "share_of_total"
+      ],
+      "title": "ScenarioContribution",
+      "type": "object"
+    },
+    "SimConfig": {
+      "properties": {
+        "trials": {
+          "default": 25000,
+          "title": "Trials",
+          "type": "integer"
+        },
+        "seed": {
+          "default": 42,
+          "description": "MUST be honoured. Common random numbers depend on it.",
+          "title": "Seed",
+          "type": "integer"
+        },
+        "horizon_days": {
+          "default": 365,
+          "title": "Horizon Days",
+          "type": "integer"
+        }
+      },
+      "title": "SimConfig",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "loss_result_id": {
+      "title": "Loss Result Id",
+      "type": "string"
+    },
+    "graph_id": {
+      "title": "Graph Id",
+      "type": "string"
+    },
+    "path_analysis_id": {
+      "title": "Path Analysis Id",
+      "type": "string"
+    },
+    "config": {
+      "$ref": "#/$defs/SimConfig"
+    },
+    "eal_inr": {
+      "description": "Mean. Report it, but never lead with it.",
+      "title": "Eal Inr",
+      "type": "number"
+    },
+    "median_inr": {
+      "title": "Median Inr",
+      "type": "number"
+    },
+    "p95_inr": {
+      "title": "P95 Inr",
+      "type": "number"
+    },
+    "p99_inr": {
+      "title": "P99 Inr",
+      "type": "number"
+    },
+    "exceedance_curve": {
+      "items": {
+        "$ref": "#/$defs/ExceedancePoint"
+      },
+      "title": "Exceedance Curve",
+      "type": "array"
+    },
+    "component_split_inr": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "propertyNames": {
+        "$ref": "#/$defs/LossComponent"
+      },
+      "title": "Component Split Inr",
+      "type": "object"
+    },
+    "scenario_contributions": {
+      "items": {
+        "$ref": "#/$defs/ScenarioContribution"
+      },
+      "title": "Scenario Contributions",
+      "type": "array"
+    },
+    "top_drivers": {
+      "items": {
+        "$ref": "#/$defs/LossDriver"
+      },
+      "title": "Top Drivers",
+      "type": "array"
+    },
+    "assumptions": {
+      "items": {
+        "$ref": "#/$defs/Assumption"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "loss_result_id",
+    "graph_id",
+    "path_analysis_id",
+    "config",
+    "eal_inr",
+    "median_inr",
+    "p95_inr",
+    "p99_inr",
+    "exceedance_curve",
+    "component_split_inr",
+    "scenario_contributions",
+    "top_drivers",
+    "assumptions"
+  ],
+  "title": "LossResult",
+  "type": "object"
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1.0",
+  "run_id": "RUN-DEMO-001",
+  "snapshot_id": "SNAP-DEMO-001",
+  "status": "complete",
+  "created_at": "2026-09-01T09:00:00Z",
+  "graph_id": "GRAPH-DEMO-001",
+  "path_analysis_id": "PATH-DEMO-001",
+  "loss_result_id": "LOSS-DEMO-001",
+  "portfolio_ids": [
+    "PORT-DEMO-001"
+  ],
+  "cci_result_id": null,
+  "error": null
+}

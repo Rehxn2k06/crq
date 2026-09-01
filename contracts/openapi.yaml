@@ -1,0 +1,1899 @@
+openapi: 3.1.0
+info:
+  title: "CRQ \u2014 Cyber Risk Quantification & Investment Optimization"
+  description: 'SIH PS 26105. Glass-box risk engine: telemetry -> attack paths ->
+    rupees -> optimal spend.'
+  version: 0.1.0
+paths:
+  /snapshots/generate:
+    post:
+      tags:
+      - snapshots
+      summary: Generate a synthetic enterprise (always labelled provenance=synthetic)
+      operationId: generate_snapshot_snapshots_generate_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateSnapshotRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snapshot'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /snapshots/{snapshot_id}:
+    get:
+      tags:
+      - snapshots
+      summary: Get Snapshot
+      operationId: get_snapshot_snapshots__snapshot_id__get
+      parameters:
+      - name: snapshot_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Snapshot Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snapshot'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /runs:
+    post:
+      tags:
+      - runs
+      summary: 'Kick off the pipeline: graph -> paths -> loss'
+      operationId: create_run_runs_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRunRequest'
+        required: true
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /runs/{run_id}:
+    get:
+      tags:
+      - runs
+      summary: Get Run
+      operationId: get_run_runs__run_id__get
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /runs/{run_id}/graph:
+    get:
+      tags:
+      - runs
+      summary: Get Graph
+      operationId: get_graph_runs__run_id__graph_get
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttackGraph'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /runs/{run_id}/paths:
+    get:
+      tags:
+      - runs
+      summary: Choke points and crown-jewel reachability
+      operationId: get_paths_runs__run_id__paths_get
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathAnalysis'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /runs/{run_id}/loss:
+    get:
+      tags:
+      - runs
+      summary: EAL, VaR, loss-exceedance curve, declared assumptions
+      operationId: get_loss_runs__run_id__loss_get
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LossResult'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /runs/{run_id}/portfolios:
+    post:
+      tags:
+      - optimizer
+      summary: Best control basket for the budget, plus the investment-vs-risk curve
+      operationId: optimize_runs__run_id__portfolios_post
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptimizeRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /runs/{run_id}/portfolios/{portfolio_id}:
+    get:
+      tags:
+      - optimizer
+      summary: Get Portfolio
+      operationId: get_portfolio_runs__run_id__portfolios__portfolio_id__get
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      - name: portfolio_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Portfolio Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /controls:
+    get:
+      tags:
+      - optimizer
+      summary: Control catalog with sourced India pricing
+      operationId: list_controls_controls_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ControlCatalogEntry'
+                type: array
+                title: Response List Controls Controls Get
+  /runs/{run_id}/cci:
+    get:
+      tags:
+      - compliance
+      summary: SEBI CSCRF Cyber Capability Index, 23 weighted parameters from telemetry
+      operationId: get_cci_runs__run_id__cci_get
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CCIResult'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /runs/{run_id}/dpdp:
+    get:
+      tags:
+      - compliance
+      summary: Get Dpdp
+      operationId: get_dpdp_runs__run_id__dpdp_get
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegulatoryExposure'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /runs/{run_id}/trace:
+    get:
+      tags:
+      - explain
+      summary: Walk any number on screen back to its raw inputs
+      operationId: get_trace_runs__run_id__trace_get
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      - name: target_ref
+        in: query
+        required: true
+        schema:
+          type: string
+          description: '''{type}:{artifact_id}:{element_id}'''
+          title: Target Ref
+        description: '''{type}:{artifact_id}:{element_id}'''
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceChain'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /query:
+    post:
+      tags:
+      - explain
+      summary: Natural language question. LLM emits a query plan only, never figures.
+      operationId: nl_query_query_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NLQueryRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NLQueryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /validation/calibration:
+    get:
+      tags:
+      - validation
+      summary: 'Backtest against VCDB: Brier score and calibration curve'
+      operationId: calibration_validation_calibration_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalibrationReport'
+  /health:
+    get:
+      tags:
+      - meta
+      summary: Health
+      operationId: health_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Health Health Get
+components:
+  schemas:
+    AppliedControl:
+      properties:
+        control_id:
+          type: string
+          title: Control Id
+        applied_to_asset_ids:
+          items:
+            type: string
+          type: array
+          title: Applied To Asset Ids
+        evidence_ref:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Evidence Ref
+      type: object
+      required:
+      - control_id
+      - applied_to_asset_ids
+      title: AppliedControl
+    Asset:
+      properties:
+        asset_id:
+          type: string
+          title: Asset Id
+        hostname:
+          type: string
+          title: Hostname
+        asset_type:
+          $ref: '#/components/schemas/AssetType'
+        business_unit:
+          type: string
+          title: Business Unit
+        internet_facing:
+          type: boolean
+          title: Internet Facing
+          default: false
+        revenue_dependency_inr_per_hour:
+          type: number
+          title: Revenue Dependency Inr Per Hour
+          default: 0.0
+        data_classes:
+          items:
+            $ref: '#/components/schemas/DataClass'
+          type: array
+          title: Data Classes
+          default: []
+        pii_records_held:
+          type: integer
+          title: Pii Records Held
+          default: 0
+        criticality_weight:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Criticality Weight
+          default: 0.0
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+          default: []
+      type: object
+      required:
+      - asset_id
+      - hostname
+      - asset_type
+      - business_unit
+      title: Asset
+    AssetType:
+      type: string
+      enum:
+      - server
+      - workstation
+      - database
+      - network_device
+      - saas
+      - cloud_resource
+      title: AssetType
+    Assumption:
+      properties:
+        key:
+          type: string
+          title: Key
+        value:
+          anyOf:
+          - type: number
+          - type: string
+          title: Value
+        unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Unit
+        source:
+          type: string
+          title: Source
+        confidence:
+          type: string
+          enum:
+          - measured
+          - public_data
+          - estimated
+          - guess
+          title: Confidence
+        sensitivity_rank:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Sensitivity Rank
+          description: 1 = moves the answer most
+      type: object
+      required:
+      - key
+      - value
+      - source
+      - confidence
+      title: Assumption
+      description: Glass-box requirement. Every soft input is declared here and shown
+        in the UI.
+    AttackGraph:
+      properties:
+        schema_version:
+          type: string
+          title: Schema Version
+          default: 0.1.0
+        graph_id:
+          type: string
+          title: Graph Id
+        snapshot_id:
+          type: string
+          title: Snapshot Id
+        nodes:
+          items:
+            $ref: '#/components/schemas/GraphNode'
+          type: array
+          title: Nodes
+        edges:
+          items:
+            $ref: '#/components/schemas/GraphEdge'
+          type: array
+          title: Edges
+        entry_node_ids:
+          items:
+            type: string
+          type: array
+          title: Entry Node Ids
+        crown_jewel_node_ids:
+          items:
+            type: string
+          type: array
+          title: Crown Jewel Node Ids
+        rules_version:
+          type: string
+          title: Rules Version
+      type: object
+      required:
+      - graph_id
+      - snapshot_id
+      - nodes
+      - edges
+      - entry_node_ids
+      - crown_jewel_node_ids
+      - rules_version
+      title: AttackGraph
+    CCIParameter:
+      properties:
+        param_id:
+          type: string
+          title: Param Id
+          description: CCI-01 .. CCI-23
+        name:
+          type: string
+          title: Name
+        weight_pct:
+          type: number
+          title: Weight Pct
+        target_pct:
+          type: number
+          title: Target Pct
+        numerator:
+          type: number
+          title: Numerator
+        denominator:
+          type: number
+          title: Denominator
+        ratio_pct:
+          type: number
+          title: Ratio Pct
+        capped_score_pct:
+          type: number
+          title: Capped Score Pct
+          description: min(ratio/target, 1.0) * 100
+        weighted_contribution:
+          type: number
+          title: Weighted Contribution
+        evidence_refs:
+          items:
+            type: string
+          type: array
+          title: Evidence Refs
+          default: []
+        clause_ref:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Clause Ref
+          description: CSCRF Annexure-K row
+      type: object
+      required:
+      - param_id
+      - name
+      - weight_pct
+      - target_pct
+      - numerator
+      - denominator
+      - ratio_pct
+      - capped_score_pct
+      - weighted_contribution
+      title: CCIParameter
+    CCIResult:
+      properties:
+        schema_version:
+          type: string
+          title: Schema Version
+          default: 0.1.0
+        cci_result_id:
+          type: string
+          title: Cci Result Id
+        snapshot_id:
+          type: string
+          title: Snapshot Id
+        score:
+          type: number
+          maximum: 100.0
+          minimum: 0.0
+          title: Score
+          description: Two decimal places, per SEBI June 2025 FAQ
+        band:
+          type: string
+          enum:
+          - Exceptional
+          - Optimal
+          - Manageable
+          - Developing
+          - Bare Minimum
+          - Fail
+          title: Band
+        meets_minimum_for_entity_class:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Meets Minimum For Entity Class
+        parameters:
+          items:
+            $ref: '#/components/schemas/CCIParameter'
+          type: array
+          title: Parameters
+      type: object
+      required:
+      - cci_result_id
+      - snapshot_id
+      - score
+      - band
+      - parameters
+      title: CCIResult
+    CalibrationBin:
+      properties:
+        predicted_probability:
+          type: number
+          title: Predicted Probability
+        observed_frequency:
+          type: number
+          title: Observed Frequency
+        n:
+          type: integer
+          title: N
+      type: object
+      required:
+      - predicted_probability
+      - observed_frequency
+      - n
+      title: CalibrationBin
+    CalibrationReport:
+      properties:
+        schema_version:
+          type: string
+          title: Schema Version
+          default: 0.1.0
+        report_id:
+          type: string
+          title: Report Id
+        reference_dataset:
+          type: string
+          title: Reference Dataset
+          default: VCDB
+        brier_score:
+          type: number
+          title: Brier Score
+        log_score:
+          type: number
+          title: Log Score
+        bins:
+          items:
+            $ref: '#/components/schemas/CalibrationBin'
+          type: array
+          title: Bins
+        notes:
+          items:
+            type: string
+          type: array
+          title: Notes
+      type: object
+      required:
+      - report_id
+      - brier_score
+      - log_score
+      - bins
+      - notes
+      title: CalibrationReport
+    ChokePoint:
+      properties:
+        node_id:
+          type: string
+          title: Node Id
+        asset_id:
+          type: string
+          title: Asset Id
+        paths_through_fraction:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Paths Through Fraction
+        crown_jewels_cut_if_removed:
+          items:
+            type: string
+          type: array
+          title: Crown Jewels Cut If Removed
+        reachable_cj_value_inr:
+          type: number
+          title: Reachable Cj Value Inr
+      type: object
+      required:
+      - node_id
+      - asset_id
+      - paths_through_fraction
+      - crown_jewels_cut_if_removed
+      - reachable_cj_value_inr
+      title: ChokePoint
+    ControlCatalogEntry:
+      properties:
+        control_id:
+          type: string
+          title: Control Id
+        name:
+          type: string
+          title: Name
+        description:
+          type: string
+          title: Description
+        nist_800_53_ref:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Nist 800 53 Ref
+        cis_control_ref:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cis Control Ref
+        cost_inr_per_year:
+          type: number
+          title: Cost Inr Per Year
+        cost_model:
+          type: string
+          enum:
+          - flat
+          - per_asset
+          - per_user
+          title: Cost Model
+        blocks_technique_ids:
+          items:
+            type: string
+          type: array
+          title: Blocks Technique Ids
+          default: []
+        blocks_finding_predicate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Blocks Finding Predicate
+          description: Tiny DSL, e.g. 'kev==true' or 'cvss_base>=9.0'
+        effectiveness:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Effectiveness
+          description: Edge probability multiplier is (1-effectiveness)
+        effectiveness_source:
+          type: string
+          title: Effectiveness Source
+        cost_source:
+          type: string
+          title: Cost Source
+          description: URL or vendor quote. Mandatory. No unsourced prices.
+      type: object
+      required:
+      - control_id
+      - name
+      - description
+      - cost_inr_per_year
+      - cost_model
+      - effectiveness
+      - effectiveness_source
+      - cost_source
+      title: ControlCatalogEntry
+    CreateRunRequest:
+      properties:
+        snapshot_id:
+          type: string
+          title: Snapshot Id
+        trials:
+          type: integer
+          title: Trials
+          default: 25000
+        seed:
+          type: integer
+          title: Seed
+          default: 42
+      type: object
+      required:
+      - snapshot_id
+      title: CreateRunRequest
+    CrownJewelReach:
+      properties:
+        node_id:
+          type: string
+          title: Node Id
+        asset_id:
+          type: string
+          title: Asset Id
+        compromise_probability:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Compromise Probability
+        shortest_path_hops:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Shortest Path Hops
+        top_path_node_ids:
+          items:
+            type: string
+          type: array
+          title: Top Path Node Ids
+          description: Highest-probability path, for the demo
+      type: object
+      required:
+      - node_id
+      - asset_id
+      - compromise_probability
+      - shortest_path_hops
+      - top_path_node_ids
+      title: CrownJewelReach
+    DataClass:
+      type: string
+      enum:
+      - pii
+      - financial
+      - credentials
+      - intellectual_property
+      - public
+      title: DataClass
+    Dependency:
+      properties:
+        from_asset_id:
+          type: string
+          title: From Asset Id
+        to_asset_id:
+          type: string
+          title: To Asset Id
+        kind:
+          type: string
+          enum:
+          - network
+          - data
+          - service
+          - trust
+          title: Kind
+        note:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Note
+      type: object
+      required:
+      - from_asset_id
+      - to_asset_id
+      - kind
+      title: Dependency
+    ExceedancePoint:
+      properties:
+        loss_inr:
+          type: number
+          title: Loss Inr
+        probability_of_exceeding:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Probability Of Exceeding
+      type: object
+      required:
+      - loss_inr
+      - probability_of_exceeding
+      title: ExceedancePoint
+    Finding:
+      properties:
+        finding_id:
+          type: string
+          title: Finding Id
+        asset_id:
+          type: string
+          title: Asset Id
+        cve_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cve Id
+        cvss_base:
+          anyOf:
+          - type: number
+            maximum: 10.0
+            minimum: 0.0
+          - type: 'null'
+          title: Cvss Base
+        cvss_vector:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cvss Vector
+        epss:
+          anyOf:
+          - type: number
+            maximum: 1.0
+            minimum: 0.0
+          - type: 'null'
+          title: Epss
+        kev:
+          type: boolean
+          title: Kev
+          default: false
+        grants_privilege:
+          $ref: '#/components/schemas/Privilege'
+          default: user
+        requires_privilege:
+          $ref: '#/components/schemas/Privilege'
+          default: none
+        source:
+          type: string
+          title: Source
+          description: trivy | openvas | prowler | wazuh | synthetic
+        first_seen:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: First Seen
+        status:
+          type: string
+          enum:
+          - open
+          - mitigated
+          - accepted
+          title: Status
+          default: open
+      type: object
+      required:
+      - finding_id
+      - asset_id
+      - source
+      title: Finding
+    GenerateSnapshotRequest:
+      properties:
+        org_name:
+          type: string
+          title: Org Name
+          default: Demo Enterprise
+        sector:
+          type: string
+          title: Sector
+          default: finance
+        asset_count:
+          type: integer
+          title: Asset Count
+          default: 200
+        seed:
+          type: integer
+          title: Seed
+          default: 42
+      type: object
+      title: GenerateSnapshotRequest
+    GraphEdge:
+      properties:
+        edge_id:
+          type: string
+          title: Edge Id
+        source_node_id:
+          type: string
+          title: Source Node Id
+        target_node_id:
+          type: string
+          title: Target Node Id
+        technique_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Technique Id
+          description: MITRE ATT&CK id, e.g. T1190
+        enabler_finding_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Enabler Finding Id
+        probability:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Probability
+        rationale:
+          type: string
+          title: Rationale
+          description: Human-readable. Shown in the trace panel. Mandatory.
+        blocked_by_control_ids:
+          items:
+            type: string
+          type: array
+          title: Blocked By Control Ids
+          default: []
+      type: object
+      required:
+      - edge_id
+      - source_node_id
+      - target_node_id
+      - probability
+      - rationale
+      title: GraphEdge
+    GraphNode:
+      properties:
+        node_id:
+          type: string
+          title: Node Id
+          description: 'Convention: ''{asset_id}:{privilege}'''
+        asset_id:
+          type: string
+          title: Asset Id
+        privilege:
+          $ref: '#/components/schemas/Privilege'
+        is_entry:
+          type: boolean
+          title: Is Entry
+          default: false
+        is_crown_jewel:
+          type: boolean
+          title: Is Crown Jewel
+          default: false
+      type: object
+      required:
+      - node_id
+      - asset_id
+      - privilege
+      title: GraphNode
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    Identity:
+      properties:
+        identity_id:
+          type: string
+          title: Identity Id
+        home_asset_id:
+          type: string
+          title: Home Asset Id
+        privilege:
+          $ref: '#/components/schemas/Privilege'
+        mfa_enabled:
+          type: boolean
+          title: Mfa Enabled
+          default: false
+        credential_reused_on:
+          items:
+            type: string
+          type: array
+          title: Credential Reused On
+          description: asset_ids where this credential also works. Lateral movement
+            fuel.
+          default: []
+      type: object
+      required:
+      - identity_id
+      - home_asset_id
+      - privilege
+      title: Identity
+    LossComponent:
+      type: string
+      enum:
+      - downtime
+      - breach_response
+      - regulatory
+      - reputational
+      title: LossComponent
+    LossDriver:
+      properties:
+        ref_type:
+          type: string
+          enum:
+          - node
+          - finding
+          - asset
+          title: Ref Type
+        ref_id:
+          type: string
+          title: Ref Id
+        label:
+          type: string
+          title: Label
+        attributed_eal_inr:
+          type: number
+          title: Attributed Eal Inr
+      type: object
+      required:
+      - ref_type
+      - ref_id
+      - label
+      - attributed_eal_inr
+      title: LossDriver
+    LossResult:
+      properties:
+        schema_version:
+          type: string
+          title: Schema Version
+          default: 0.1.0
+        loss_result_id:
+          type: string
+          title: Loss Result Id
+        graph_id:
+          type: string
+          title: Graph Id
+        path_analysis_id:
+          type: string
+          title: Path Analysis Id
+        config:
+          $ref: '#/components/schemas/SimConfig'
+        eal_inr:
+          type: number
+          title: Eal Inr
+          description: Mean. Report it, but never lead with it.
+        median_inr:
+          type: number
+          title: Median Inr
+        p95_inr:
+          type: number
+          title: P95 Inr
+        p99_inr:
+          type: number
+          title: P99 Inr
+        exceedance_curve:
+          items:
+            $ref: '#/components/schemas/ExceedancePoint'
+          type: array
+          title: Exceedance Curve
+        component_split_inr:
+          additionalProperties:
+            type: number
+          propertyNames:
+            $ref: '#/components/schemas/LossComponent'
+          type: object
+          title: Component Split Inr
+        scenario_contributions:
+          items:
+            $ref: '#/components/schemas/ScenarioContribution'
+          type: array
+          title: Scenario Contributions
+        top_drivers:
+          items:
+            $ref: '#/components/schemas/LossDriver'
+          type: array
+          title: Top Drivers
+        assumptions:
+          items:
+            $ref: '#/components/schemas/Assumption'
+          type: array
+          title: Assumptions
+      type: object
+      required:
+      - loss_result_id
+      - graph_id
+      - path_analysis_id
+      - config
+      - eal_inr
+      - median_inr
+      - p95_inr
+      - p99_inr
+      - exceedance_curve
+      - component_split_inr
+      - scenario_contributions
+      - top_drivers
+      - assumptions
+      title: LossResult
+    NLQueryPlan:
+      properties:
+        intent:
+          type: string
+          enum:
+          - top_loss_drivers
+          - eal_summary
+          - choke_points
+          - portfolio_summary
+          - control_lookup
+          - cci_summary
+          - scenario_detail
+          - asset_detail
+          - compare_budgets
+          - exceedance_at_loss
+          - unsupported
+          title: Intent
+        filters:
+          additionalProperties:
+            anyOf:
+            - type: string
+            - type: number
+            - type: integer
+            - type: boolean
+          type: object
+          title: Filters
+          default: {}
+        limit:
+          type: integer
+          title: Limit
+          default: 10
+      type: object
+      required:
+      - intent
+      title: NLQueryPlan
+      description: What the LLM is allowed to emit. Nothing else. It never returns
+        numbers.
+    NLQueryRequest:
+      properties:
+        run_id:
+          type: string
+          title: Run Id
+        question:
+          type: string
+          title: Question
+      type: object
+      required:
+      - run_id
+      - question
+      title: NLQueryRequest
+    NLQueryResponse:
+      properties:
+        plan:
+          $ref: '#/components/schemas/NLQueryPlan'
+        data:
+          additionalProperties: true
+          type: object
+          title: Data
+        narrative:
+          type: string
+          title: Narrative
+          description: Generated from data. The LLM never invents a figure.
+      type: object
+      required:
+      - plan
+      - data
+      - narrative
+      title: NLQueryResponse
+    OptimizeRequest:
+      properties:
+        budget_inr:
+          type: number
+          title: Budget Inr
+          default: 10000000
+        method:
+          type: string
+          title: Method
+          default: lazy_greedy
+        include_pareto:
+          type: boolean
+          title: Include Pareto
+          default: true
+      type: object
+      title: OptimizeRequest
+    OrgProfile:
+      properties:
+        name:
+          type: string
+          title: Name
+        sector:
+          type: string
+          title: Sector
+          description: VCDB/NAICS-ish label, e.g. 'finance', 'healthcare'
+        is_sebi_regulated:
+          type: boolean
+          title: Is Sebi Regulated
+          default: false
+        sebi_entity_class:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sebi Entity Class
+          description: MII | QRE | MID | SMALL | SELF_CERT
+        annual_revenue_inr:
+          type: number
+          title: Annual Revenue Inr
+        employee_count:
+          type: integer
+          title: Employee Count
+        pii_records_count:
+          type: integer
+          title: Pii Records Count
+          description: Drives the DPDP + breach-response model
+      type: object
+      required:
+      - name
+      - sector
+      - annual_revenue_inr
+      - employee_count
+      - pii_records_count
+      title: OrgProfile
+    ParetoPoint:
+      properties:
+        budget_inr:
+          type: number
+          title: Budget Inr
+        residual_eal_inr:
+          type: number
+          title: Residual Eal Inr
+        control_count:
+          type: integer
+          title: Control Count
+      type: object
+      required:
+      - budget_inr
+      - residual_eal_inr
+      - control_count
+      title: ParetoPoint
+    PathAnalysis:
+      properties:
+        schema_version:
+          type: string
+          title: Schema Version
+          default: 0.1.0
+        path_analysis_id:
+          type: string
+          title: Path Analysis Id
+        graph_id:
+          type: string
+          title: Graph Id
+        choke_points:
+          items:
+            $ref: '#/components/schemas/ChokePoint'
+          type: array
+          title: Choke Points
+        crown_jewel_reach:
+          items:
+            $ref: '#/components/schemas/CrownJewelReach'
+          type: array
+          title: Crown Jewel Reach
+        dead_end_node_fraction:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Dead End Node Fraction
+          description: Nodes on no path to any crown jewel. The '74%' stat, for your
+            org.
+      type: object
+      required:
+      - path_analysis_id
+      - graph_id
+      - choke_points
+      - crown_jewel_reach
+      - dead_end_node_fraction
+      title: PathAnalysis
+    Portfolio:
+      properties:
+        schema_version:
+          type: string
+          title: Schema Version
+          default: 0.1.0
+        portfolio_id:
+          type: string
+          title: Portfolio Id
+        loss_result_id:
+          type: string
+          title: Loss Result Id
+        budget_inr:
+          type: number
+          title: Budget Inr
+        method:
+          type: string
+          enum:
+          - lazy_greedy
+          - milp
+          title: Method
+        selected:
+          items:
+            $ref: '#/components/schemas/SelectedControl'
+          type: array
+          title: Selected
+        total_cost_inr:
+          type: number
+          title: Total Cost Inr
+        baseline_eal_inr:
+          type: number
+          title: Baseline Eal Inr
+        residual_eal_inr:
+          type: number
+          title: Residual Eal Inr
+        risk_reduction_inr:
+          type: number
+          title: Risk Reduction Inr
+        rosi:
+          type: number
+          title: Rosi
+          description: (risk_reduction - cost) / cost
+        pareto_curve:
+          items:
+            $ref: '#/components/schemas/ParetoPoint'
+          type: array
+          title: Pareto Curve
+        optimality_gap:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Optimality Gap
+          description: Set when greedy is compared to MILP
+        solve_ms:
+          type: number
+          title: Solve Ms
+      type: object
+      required:
+      - portfolio_id
+      - loss_result_id
+      - budget_inr
+      - method
+      - selected
+      - total_cost_inr
+      - baseline_eal_inr
+      - residual_eal_inr
+      - risk_reduction_inr
+      - rosi
+      - pareto_curve
+      - solve_ms
+      title: Portfolio
+    Privilege:
+      type: string
+      enum:
+      - none
+      - user
+      - admin
+      - data_read
+      - data_admin
+      title: Privilege
+    Provenance:
+      type: string
+      enum:
+      - synthetic
+      - scanner
+      - mixed
+      title: Provenance
+      description: Shown in the UI. Never lie about this.
+    RegulatoryExposure:
+      properties:
+        schema_version:
+          type: string
+          title: Schema Version
+          default: 0.1.0
+        snapshot_id:
+          type: string
+          title: Snapshot Id
+        dpdp_max_exposure_inr:
+          type: number
+          title: Dpdp Max Exposure Inr
+        dpdp_breakdown:
+          additionalProperties:
+            type: number
+          type: object
+          title: Dpdp Breakdown
+          description: clause -> ceiling in INR
+        modelled_expected_penalty_inr:
+          type: number
+          title: Modelled Expected Penalty Inr
+        notes:
+          items:
+            type: string
+          type: array
+          title: Notes
+      type: object
+      required:
+      - snapshot_id
+      - dpdp_max_exposure_inr
+      - dpdp_breakdown
+      - modelled_expected_penalty_inr
+      - notes
+      title: RegulatoryExposure
+    Run:
+      properties:
+        schema_version:
+          type: string
+          title: Schema Version
+          default: 0.1.0
+        run_id:
+          type: string
+          title: Run Id
+        snapshot_id:
+          type: string
+          title: Snapshot Id
+        status:
+          $ref: '#/components/schemas/RunStatus'
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        graph_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Graph Id
+        path_analysis_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Path Analysis Id
+        loss_result_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Loss Result Id
+        portfolio_ids:
+          items:
+            type: string
+          type: array
+          title: Portfolio Ids
+          default: []
+        cci_result_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cci Result Id
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+      type: object
+      required:
+      - run_id
+      - snapshot_id
+      - status
+      - created_at
+      title: Run
+    RunStatus:
+      type: string
+      enum:
+      - pending
+      - running
+      - complete
+      - failed
+      title: RunStatus
+    ScenarioContribution:
+      properties:
+        scenario_id:
+          type: string
+          title: Scenario Id
+        name:
+          type: string
+          title: Name
+        triggering_node_ids:
+          items:
+            type: string
+          type: array
+          title: Triggering Node Ids
+        annual_frequency:
+          type: number
+          title: Annual Frequency
+        eal_inr:
+          type: number
+          title: Eal Inr
+        share_of_total:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Share Of Total
+      type: object
+      required:
+      - scenario_id
+      - name
+      - triggering_node_ids
+      - annual_frequency
+      - eal_inr
+      - share_of_total
+      title: ScenarioContribution
+    SelectedControl:
+      properties:
+        control_id:
+          type: string
+          title: Control Id
+        name:
+          type: string
+          title: Name
+        applied_to_asset_ids:
+          items:
+            type: string
+          type: array
+          title: Applied To Asset Ids
+        cost_inr:
+          type: number
+          title: Cost Inr
+        delta_eal_inr:
+          type: number
+          title: Delta Eal Inr
+          description: Marginal, computed in selection order. Not standalone.
+        roi_ratio:
+          type: number
+          title: Roi Ratio
+          description: delta_eal_inr / cost_inr
+        selection_rank:
+          type: integer
+          title: Selection Rank
+        reason:
+          type: string
+          title: Reason
+      type: object
+      required:
+      - control_id
+      - name
+      - applied_to_asset_ids
+      - cost_inr
+      - delta_eal_inr
+      - roi_ratio
+      - selection_rank
+      - reason
+      title: SelectedControl
+    SimConfig:
+      properties:
+        trials:
+          type: integer
+          title: Trials
+          default: 25000
+        seed:
+          type: integer
+          title: Seed
+          description: MUST be honoured. Common random numbers depend on it.
+          default: 42
+        horizon_days:
+          type: integer
+          title: Horizon Days
+          default: 365
+      type: object
+      title: SimConfig
+    Snapshot:
+      properties:
+        schema_version:
+          type: string
+          title: Schema Version
+          default: 0.1.0
+        snapshot_id:
+          type: string
+          title: Snapshot Id
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        provenance:
+          $ref: '#/components/schemas/Provenance'
+        org:
+          $ref: '#/components/schemas/OrgProfile'
+        assets:
+          items:
+            $ref: '#/components/schemas/Asset'
+          type: array
+          title: Assets
+        dependencies:
+          items:
+            $ref: '#/components/schemas/Dependency'
+          type: array
+          title: Dependencies
+          default: []
+        identities:
+          items:
+            $ref: '#/components/schemas/Identity'
+          type: array
+          title: Identities
+          default: []
+        findings:
+          items:
+            $ref: '#/components/schemas/Finding'
+          type: array
+          title: Findings
+          default: []
+        existing_controls:
+          items:
+            $ref: '#/components/schemas/AppliedControl'
+          type: array
+          title: Existing Controls
+          default: []
+        telemetry:
+          $ref: '#/components/schemas/TelemetryMetrics'
+          default:
+            vulns_identified: 0
+            vulns_mitigated: 0
+            remote_users_total: 0
+            remote_users_with_mfa: 0
+            infosec_budget_inr: 0.0
+            it_budget_inr: 0.0
+            critical_systems_identified: 0
+            systems_integrated_with_soc: 0
+            total_it_systems: 0
+            staff_total: 0
+            staff_security_trained: 0
+            incidents_total: 0
+            incidents_closed_in_sla: 0
+            assets_with_current_patch: 0
+            backups_tested_count: 0
+            backups_total_count: 0
+      type: object
+      required:
+      - snapshot_id
+      - created_at
+      - provenance
+      - org
+      - assets
+      title: Snapshot
+      description: The whole enterprise at one point in time. The only input to everything
+        downstream.
+    TelemetryMetrics:
+      properties:
+        vulns_identified:
+          type: integer
+          title: Vulns Identified
+          default: 0
+        vulns_mitigated:
+          type: integer
+          title: Vulns Mitigated
+          default: 0
+        remote_users_total:
+          type: integer
+          title: Remote Users Total
+          default: 0
+        remote_users_with_mfa:
+          type: integer
+          title: Remote Users With Mfa
+          default: 0
+        infosec_budget_inr:
+          type: number
+          title: Infosec Budget Inr
+          default: 0.0
+        it_budget_inr:
+          type: number
+          title: It Budget Inr
+          default: 0.0
+        critical_systems_identified:
+          type: integer
+          title: Critical Systems Identified
+          default: 0
+        systems_integrated_with_soc:
+          type: integer
+          title: Systems Integrated With Soc
+          default: 0
+        total_it_systems:
+          type: integer
+          title: Total It Systems
+          default: 0
+        staff_total:
+          type: integer
+          title: Staff Total
+          default: 0
+        staff_security_trained:
+          type: integer
+          title: Staff Security Trained
+          default: 0
+        incidents_total:
+          type: integer
+          title: Incidents Total
+          default: 0
+        incidents_closed_in_sla:
+          type: integer
+          title: Incidents Closed In Sla
+          default: 0
+        assets_with_current_patch:
+          type: integer
+          title: Assets With Current Patch
+          default: 0
+        backups_tested_count:
+          type: integer
+          title: Backups Tested Count
+          default: 0
+        backups_total_count:
+          type: integer
+          title: Backups Total Count
+          default: 0
+      type: object
+      title: TelemetryMetrics
+      description: Raw counters. Feeds the SEBI CCI parameters, which are literally
+        ratios of these.
+    TraceChain:
+      properties:
+        schema_version:
+          type: string
+          title: Schema Version
+          default: 0.1.0
+        target_ref:
+          type: string
+          title: Target Ref
+        steps:
+          items:
+            $ref: '#/components/schemas/TraceStep'
+          type: array
+          title: Steps
+      type: object
+      required:
+      - target_ref
+      - steps
+      title: TraceChain
+      description: Powers the 'why is this number what it is' panel. The whole pitch
+        depends on this working.
+    TraceStep:
+      properties:
+        stage:
+          type: string
+          title: Stage
+        artifact_id:
+          type: string
+          title: Artifact Id
+        element_id:
+          type: string
+          title: Element Id
+        label:
+          type: string
+          title: Label
+        detail:
+          type: string
+          title: Detail
+        inputs:
+          items:
+            type: string
+          type: array
+          title: Inputs
+          default: []
+      type: object
+      required:
+      - stage
+      - artifact_id
+      - element_id
+      - label
+      - detail
+      title: TraceStep
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

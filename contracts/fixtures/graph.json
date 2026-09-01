@@ -1,0 +1,198 @@
+{
+  "schema_version": "0.1.0",
+  "graph_id": "GRAPH-DEMO-001",
+  "snapshot_id": "SNAP-DEMO-001",
+  "nodes": [
+    {
+      "node_id": "internet:none",
+      "asset_id": "internet",
+      "privilege": "none",
+      "is_entry": true,
+      "is_crown_jewel": false
+    },
+    {
+      "node_id": "a-web-01:user",
+      "asset_id": "a-web-01",
+      "privilege": "user",
+      "is_entry": false,
+      "is_crown_jewel": false
+    },
+    {
+      "node_id": "a-vpn-01:admin",
+      "asset_id": "a-vpn-01",
+      "privilege": "admin",
+      "is_entry": false,
+      "is_crown_jewel": false
+    },
+    {
+      "node_id": "a-jenkins-01:admin",
+      "asset_id": "a-jenkins-01",
+      "privilege": "admin",
+      "is_entry": false,
+      "is_crown_jewel": false
+    },
+    {
+      "node_id": "a-app-01:user",
+      "asset_id": "a-app-01",
+      "privilege": "user",
+      "is_entry": false,
+      "is_crown_jewel": false
+    },
+    {
+      "node_id": "a-ws-02:user",
+      "asset_id": "a-ws-02",
+      "privilege": "user",
+      "is_entry": false,
+      "is_crown_jewel": false
+    },
+    {
+      "node_id": "a-ad-01:admin",
+      "asset_id": "a-ad-01",
+      "privilege": "admin",
+      "is_entry": false,
+      "is_crown_jewel": false
+    },
+    {
+      "node_id": "a-db-cust:data_admin",
+      "asset_id": "a-db-cust",
+      "privilege": "data_admin",
+      "is_entry": false,
+      "is_crown_jewel": true
+    },
+    {
+      "node_id": "a-db-fin:data_admin",
+      "asset_id": "a-db-fin",
+      "privilege": "data_admin",
+      "is_entry": false,
+      "is_crown_jewel": true
+    },
+    {
+      "node_id": "a-s3-backup:data_read",
+      "asset_id": "a-s3-backup",
+      "privilege": "data_read",
+      "is_entry": false,
+      "is_crown_jewel": true
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "e-01",
+      "source_node_id": "internet:none",
+      "target_node_id": "a-web-01:user",
+      "technique_id": "T1190",
+      "enabler_finding_id": "f-001",
+      "probability": 0.94,
+      "rationale": "CVE-2024-27198 on internet-facing web-01, EPSS 0.94, in CISA KEV",
+      "blocked_by_control_ids": []
+    },
+    {
+      "edge_id": "e-02",
+      "source_node_id": "internet:none",
+      "target_node_id": "a-vpn-01:admin",
+      "technique_id": "T1190",
+      "enabler_finding_id": "f-002",
+      "probability": 0.87,
+      "rationale": "CVE-2024-21887 on internet-facing vpn-01, EPSS 0.87, in CISA KEV",
+      "blocked_by_control_ids": []
+    },
+    {
+      "edge_id": "e-03",
+      "source_node_id": "a-web-01:user",
+      "target_node_id": "a-jenkins-01:admin",
+      "technique_id": "T1210",
+      "enabler_finding_id": "f-003",
+      "probability": 0.42,
+      "rationale": "CVE-2024-23897 unauth RCE on jenkins-prod-01, reachable from web tier",
+      "blocked_by_control_ids": []
+    },
+    {
+      "edge_id": "e-04",
+      "source_node_id": "a-vpn-01:admin",
+      "target_node_id": "a-ws-02:user",
+      "technique_id": "T1021",
+      "enabler_finding_id": "f-007",
+      "probability": 0.55,
+      "rationale": "VPN admin grants network access to engineering workstation subnet",
+      "blocked_by_control_ids": []
+    },
+    {
+      "edge_id": "e-05",
+      "source_node_id": "a-ws-02:user",
+      "target_node_id": "a-jenkins-01:admin",
+      "technique_id": "T1078",
+      "enabler_finding_id": null,
+      "probability": 0.6,
+      "rationale": "Credential i-eng reused on jenkins-prod-01",
+      "blocked_by_control_ids": []
+    },
+    {
+      "edge_id": "e-06",
+      "source_node_id": "a-jenkins-01:admin",
+      "target_node_id": "a-app-01:user",
+      "technique_id": "T1078",
+      "enabler_finding_id": null,
+      "probability": 0.75,
+      "rationale": "Service credential i-svc-deploy reused on app-01, no MFA",
+      "blocked_by_control_ids": []
+    },
+    {
+      "edge_id": "e-07",
+      "source_node_id": "a-app-01:user",
+      "target_node_id": "a-db-cust:data_admin",
+      "technique_id": "T1210",
+      "enabler_finding_id": "f-008",
+      "probability": 0.35,
+      "rationale": "CVE-2024-1597 on db-customer, reachable via app data dependency",
+      "blocked_by_control_ids": []
+    },
+    {
+      "edge_id": "e-08",
+      "source_node_id": "a-jenkins-01:admin",
+      "target_node_id": "a-ad-01:admin",
+      "technique_id": "T1068",
+      "enabler_finding_id": "f-004",
+      "probability": 0.31,
+      "rationale": "CVE-2021-42287 privesc to domain controller, in CISA KEV",
+      "blocked_by_control_ids": []
+    },
+    {
+      "edge_id": "e-09",
+      "source_node_id": "a-ad-01:admin",
+      "target_node_id": "a-db-cust:data_admin",
+      "technique_id": "T1078",
+      "enabler_finding_id": null,
+      "probability": 0.85,
+      "rationale": "Domain admin trust path to customer database",
+      "blocked_by_control_ids": []
+    },
+    {
+      "edge_id": "e-10",
+      "source_node_id": "a-ad-01:admin",
+      "target_node_id": "a-db-fin:data_admin",
+      "technique_id": "T1078",
+      "enabler_finding_id": null,
+      "probability": 0.8,
+      "rationale": "Domain admin trust path to finance database",
+      "blocked_by_control_ids": []
+    },
+    {
+      "edge_id": "e-11",
+      "source_node_id": "a-db-cust:data_admin",
+      "target_node_id": "a-s3-backup:data_read",
+      "technique_id": "T1530",
+      "enabler_finding_id": "f-006",
+      "probability": 0.7,
+      "rationale": "Backup bucket policy permits read from database service role",
+      "blocked_by_control_ids": []
+    }
+  ],
+  "entry_node_ids": [
+    "internet:none"
+  ],
+  "crown_jewel_node_ids": [
+    "a-db-cust:data_admin",
+    "a-db-fin:data_admin",
+    "a-s3-backup:data_read"
+  ],
+  "rules_version": "v1"
+}

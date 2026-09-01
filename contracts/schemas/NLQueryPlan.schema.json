@@ -1,0 +1,53 @@
+{
+  "description": "What the LLM is allowed to emit. Nothing else. It never returns numbers.",
+  "properties": {
+    "intent": {
+      "enum": [
+        "top_loss_drivers",
+        "eal_summary",
+        "choke_points",
+        "portfolio_summary",
+        "control_lookup",
+        "cci_summary",
+        "scenario_detail",
+        "asset_detail",
+        "compare_budgets",
+        "exceedance_at_loss",
+        "unsupported"
+      ],
+      "title": "Intent",
+      "type": "string"
+    },
+    "filters": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
+      "default": {},
+      "title": "Filters",
+      "type": "object"
+    },
+    "limit": {
+      "default": 10,
+      "title": "Limit",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "intent"
+  ],
+  "title": "NLQueryPlan",
+  "type": "object"
+}

@@ -1,0 +1,102 @@
+{
+  "properties": {
+    "control_id": {
+      "title": "Control Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "description": {
+      "title": "Description",
+      "type": "string"
+    },
+    "nist_800_53_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Nist 800 53 Ref"
+    },
+    "cis_control_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cis Control Ref"
+    },
+    "cost_inr_per_year": {
+      "title": "Cost Inr Per Year",
+      "type": "number"
+    },
+    "cost_model": {
+      "enum": [
+        "flat",
+        "per_asset",
+        "per_user"
+      ],
+      "title": "Cost Model",
+      "type": "string"
+    },
+    "blocks_technique_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Blocks Technique Ids",
+      "type": "array"
+    },
+    "blocks_finding_predicate": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Tiny DSL, e.g. 'kev==true' or 'cvss_base>=9.0'",
+      "title": "Blocks Finding Predicate"
+    },
+    "effectiveness": {
+      "description": "Edge probability multiplier is (1-effectiveness)",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Effectiveness",
+      "type": "number"
+    },
+    "effectiveness_source": {
+      "title": "Effectiveness Source",
+      "type": "string"
+    },
+    "cost_source": {
+      "description": "URL or vendor quote. Mandatory. No unsourced prices.",
+      "title": "Cost Source",
+      "type": "string"
+    }
+  },
+  "required": [
+    "control_id",
+    "name",
+    "description",
+    "cost_inr_per_year",
+    "cost_model",
+    "effectiveness",
+    "effectiveness_source",
+    "cost_source"
+  ],
+  "title": "ControlCatalogEntry",
+  "type": "object"
+}

@@ -1,0 +1,133 @@
+{
+  "$defs": {
+    "ChokePoint": {
+      "properties": {
+        "node_id": {
+          "title": "Node Id",
+          "type": "string"
+        },
+        "asset_id": {
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "paths_through_fraction": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Paths Through Fraction",
+          "type": "number"
+        },
+        "crown_jewels_cut_if_removed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Crown Jewels Cut If Removed",
+          "type": "array"
+        },
+        "reachable_cj_value_inr": {
+          "title": "Reachable Cj Value Inr",
+          "type": "number"
+        }
+      },
+      "required": [
+        "node_id",
+        "asset_id",
+        "paths_through_fraction",
+        "crown_jewels_cut_if_removed",
+        "reachable_cj_value_inr"
+      ],
+      "title": "ChokePoint",
+      "type": "object"
+    },
+    "CrownJewelReach": {
+      "properties": {
+        "node_id": {
+          "title": "Node Id",
+          "type": "string"
+        },
+        "asset_id": {
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "compromise_probability": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Compromise Probability",
+          "type": "number"
+        },
+        "shortest_path_hops": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Shortest Path Hops"
+        },
+        "top_path_node_ids": {
+          "description": "Highest-probability path, for the demo",
+          "items": {
+            "type": "string"
+          },
+          "title": "Top Path Node Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "node_id",
+        "asset_id",
+        "compromise_probability",
+        "shortest_path_hops",
+        "top_path_node_ids"
+      ],
+      "title": "CrownJewelReach",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "path_analysis_id": {
+      "title": "Path Analysis Id",
+      "type": "string"
+    },
+    "graph_id": {
+      "title": "Graph Id",
+      "type": "string"
+    },
+    "choke_points": {
+      "items": {
+        "$ref": "#/$defs/ChokePoint"
+      },
+      "title": "Choke Points",
+      "type": "array"
+    },
+    "crown_jewel_reach": {
+      "items": {
+        "$ref": "#/$defs/CrownJewelReach"
+      },
+      "title": "Crown Jewel Reach",
+      "type": "array"
+    },
+    "dead_end_node_fraction": {
+      "description": "Nodes on no path to any crown jewel. The '74%' stat, for your org.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Dead End Node Fraction",
+      "type": "number"
+    }
+  },
+  "required": [
+    "path_analysis_id",
+    "graph_id",
+    "choke_points",
+    "crown_jewel_reach",
+    "dead_end_node_fraction"
+  ],
+  "title": "PathAnalysis",
+  "type": "object"
+}

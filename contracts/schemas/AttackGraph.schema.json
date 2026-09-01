@@ -1,0 +1,175 @@
+{
+  "$defs": {
+    "GraphEdge": {
+      "properties": {
+        "edge_id": {
+          "title": "Edge Id",
+          "type": "string"
+        },
+        "source_node_id": {
+          "title": "Source Node Id",
+          "type": "string"
+        },
+        "target_node_id": {
+          "title": "Target Node Id",
+          "type": "string"
+        },
+        "technique_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "MITRE ATT&CK id, e.g. T1190",
+          "title": "Technique Id"
+        },
+        "enabler_finding_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Enabler Finding Id"
+        },
+        "probability": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Probability",
+          "type": "number"
+        },
+        "rationale": {
+          "description": "Human-readable. Shown in the trace panel. Mandatory.",
+          "title": "Rationale",
+          "type": "string"
+        },
+        "blocked_by_control_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Blocked By Control Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "edge_id",
+        "source_node_id",
+        "target_node_id",
+        "probability",
+        "rationale"
+      ],
+      "title": "GraphEdge",
+      "type": "object"
+    },
+    "GraphNode": {
+      "properties": {
+        "node_id": {
+          "description": "Convention: '{asset_id}:{privilege}'",
+          "title": "Node Id",
+          "type": "string"
+        },
+        "asset_id": {
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "privilege": {
+          "$ref": "#/$defs/Privilege"
+        },
+        "is_entry": {
+          "default": false,
+          "title": "Is Entry",
+          "type": "boolean"
+        },
+        "is_crown_jewel": {
+          "default": false,
+          "title": "Is Crown Jewel",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "node_id",
+        "asset_id",
+        "privilege"
+      ],
+      "title": "GraphNode",
+      "type": "object"
+    },
+    "Privilege": {
+      "enum": [
+        "none",
+        "user",
+        "admin",
+        "data_read",
+        "data_admin"
+      ],
+      "title": "Privilege",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "graph_id": {
+      "title": "Graph Id",
+      "type": "string"
+    },
+    "snapshot_id": {
+      "title": "Snapshot Id",
+      "type": "string"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/GraphNode"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/GraphEdge"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "entry_node_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Entry Node Ids",
+      "type": "array"
+    },
+    "crown_jewel_node_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Crown Jewel Node Ids",
+      "type": "array"
+    },
+    "rules_version": {
+      "title": "Rules Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "graph_id",
+    "snapshot_id",
+    "nodes",
+    "edges",
+    "entry_node_ids",
+    "crown_jewel_node_ids",
+    "rules_version"
+  ],
+  "title": "AttackGraph",
+  "type": "object"
+}

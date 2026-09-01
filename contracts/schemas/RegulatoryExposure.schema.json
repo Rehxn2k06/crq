@@ -1,0 +1,45 @@
+{
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "snapshot_id": {
+      "title": "Snapshot Id",
+      "type": "string"
+    },
+    "dpdp_max_exposure_inr": {
+      "title": "Dpdp Max Exposure Inr",
+      "type": "number"
+    },
+    "dpdp_breakdown": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "description": "clause -> ceiling in INR",
+      "title": "Dpdp Breakdown",
+      "type": "object"
+    },
+    "modelled_expected_penalty_inr": {
+      "title": "Modelled Expected Penalty Inr",
+      "type": "number"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "snapshot_id",
+    "dpdp_max_exposure_inr",
+    "dpdp_breakdown",
+    "modelled_expected_penalty_inr",
+    "notes"
+  ],
+  "title": "RegulatoryExposure",
+  "type": "object"
+}

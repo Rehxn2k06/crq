@@ -13,6 +13,8 @@ Nothing here writes to contracts/. The fixtures are read-only inputs.
 from __future__ import annotations
 
 import json
+import random
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -22,12 +24,15 @@ from crq_core.graph import (
     KEV_PROBABILITY_FLOOR,
     MAX_PATH_HOPS,
     analyze_paths,
+    apply_controls,
     build_graph,
 )
 from crq_core.schemas import (
     AppliedControl,
     Asset,
     AssetType,
+    AttackGraph,
+    ControlCatalogEntry,
     DataClass,
     Dependency,
     Finding,
@@ -608,3 +613,314 @@ def test_analyze_paths_handles_a_graph_with_no_crown_jewels():
     assert result.choke_points == []
     assert result.crown_jewel_reach == []
     assert result.dead_end_node_fraction == 1.0
+
+
+# --------------------------------------------------------------------------- #
+# apply_controls
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture(scope="module")
+def catalog() -> list[ControlCatalogEntry]:
+    raw = json.loads((FIXTURES / "control_catalog.json").read_text())
+    return [ControlCatalogEntry.model_validate(entry) for entry in raw]
+
+
+@pytest.fixture(scope="module")
+def large_graph():
+    """A 200-asset org, big enough that a slow apply_controls would show. Built
+    from a fixed seed so the benchmark measures the code, not the dice."""
+    rng = random.Random(7)
+    types = list(AssetType)
+    assets = [
+        Asset(
+            asset_id=f"a{i}",
+            hostname=f"h{i}",
+            asset_type=types[i % len(types)],
+            business_unit="it",
+            internet_facing=i < 25,
+            revenue_dependency_inr_per_hour=1000.0 * i,
+            data_classes=[DataClass.PII] if i % 17 == 0 else [],
+            pii_records_held=1000 if i % 17 == 0 else 0,
+            criticality_weight=0.5,
+            tags=["crown_jewel"] if i % 40 == 0 else [],
+        )
+        for i in range(200)
+    ]
+    dependencies = [
+        Dependency(
+            from_asset_id=f"a{rng.randrange(200)}",
+            to_asset_id=f"a{rng.randrange(200)}",
+            kind=["network", "data", "service", "trust"][rng.randrange(4)],
+        )
+        for _ in range(400)
+    ]
+    findings = [
+        Finding(
+            finding_id=f"f{i}",
+            asset_id=f"a{rng.randrange(200)}",
+            cvss_base=8.0,
+            epss=rng.random(),
+            kev=i % 9 == 0,
+            grants_privilege=Privilege.ADMIN if i % 2 else Privilege.USER,
+            source="synthetic",
+        )
+        for i in range(300)
+    ]
+    identities = [
+        Identity(
+            identity_id=f"i{i}",
+            home_asset_id=f"a{rng.randrange(200)}",
+            privilege=Privilege.ADMIN if i % 2 else Privilege.USER,
+            credential_reused_on=[f"a{rng.randrange(200)}" for _ in range(3)],
+        )
+        for i in range(40)
+    ]
+    snapshot = Snapshot(
+        snapshot_id="SNAP-BENCH-001",
+        created_at=datetime(2026, 9, 1, tzinfo=timezone.utc),
+        provenance=Provenance.SYNTHETIC,
+        org=_org(),
+        assets=assets,
+        dependencies=dependencies,
+        identities=identities,
+        findings=findings,
+    )
+    return build_graph(snapshot)
+
+
+def _catalog_entry(catalog: list[ControlCatalogEntry], control_id: str) -> ControlCatalogEntry:
+    return next(c for c in catalog if c.control_id == control_id)
+
+
+def test_apply_controls_does_not_mutate_the_input_graph(graph, catalog):
+    """Pure, and the optimizer bets everything on it: it re-applies candidate
+    control sets to this same baseline thousands of times."""
+    before = graph.model_dump_json()
+    result = apply_controls(
+        graph,
+        catalog,
+        [
+            AppliedControl(control_id="ctl-waf", applied_to_asset_ids=["a-web-01", "a-web-02"]),
+            AppliedControl(control_id="ctl-pam", applied_to_asset_ids=["a-jenkins-01"]),
+            AppliedControl(control_id="ctl-segment-ci", applied_to_asset_ids=["a-jenkins-01"]),
+        ],
+    )
+    assert graph.model_dump_json() == before, "apply_controls mutated the graph it was given"
+    assert result is not graph
+    assert result.model_dump_json() != before, "nothing was actually applied"
+
+
+def test_apply_controls_returns_the_same_shape(graph, catalog):
+    result = apply_controls(
+        graph, catalog, [AppliedControl(control_id="ctl-waf", applied_to_asset_ids=["a-web-01"])]
+    )
+    assert isinstance(result, AttackGraph)
+    assert [n.node_id for n in result.nodes] == [n.node_id for n in graph.nodes]
+    assert [e.edge_id for e in result.edges] == [e.edge_id for e in graph.edges]
+    assert result.graph_id == graph.graph_id
+    assert result.snapshot_id == graph.snapshot_id
+    assert result.crown_jewel_node_ids == graph.crown_jewel_node_ids
+    assert result.entry_node_ids == graph.entry_node_ids
+    # New spine: mutating a list on the copy must not reach the original.
+    assert result.nodes is not graph.nodes
+    assert result.edges is not graph.edges
+    assert result.crown_jewel_node_ids is not graph.crown_jewel_node_ids
+
+
+def test_a_control_reduces_the_probability_of_what_it_blocks(graph, catalog):
+    """ctl-waf blocks T1190 at 55%. The internet -> web-01 exploit is 0.94."""
+    result = apply_controls(
+        graph, catalog, [AppliedControl(control_id="ctl-waf", applied_to_asset_ids=["a-web-01"])]
+    )
+    edge = _edge(result, "internet:none", "a-web-01:user")
+    assert edge.probability == pytest.approx(0.94 * 0.45)
+    assert "ctl-waf" in edge.blocked_by_control_ids
+
+
+def test_a_control_leaves_other_techniques_alone(graph, catalog):
+    """ctl-waf is a web firewall. It does nothing about credential reuse."""
+    result = apply_controls(
+        graph,
+        catalog,
+        [AppliedControl(control_id="ctl-waf", applied_to_asset_ids=["a-web-01", "a-jenkins-01"])],
+    )
+    for source, target in (
+        ("a-jenkins-01:admin", "a-app-01:user"),
+        ("a-ad-01:admin", "a-db-fin:data_admin"),
+    ):
+        assert _edge(result, source, target).probability == pytest.approx(
+            _edge(graph, source, target).probability
+        )
+
+
+def test_a_control_applies_at_either_end_of_the_action(graph, catalog):
+    """ctl-pam blocks T1078. Applied to jenkins it covers the credential reuse
+    that leaves jenkins, not only what arrives there."""
+    result = apply_controls(
+        graph,
+        catalog,
+        [AppliedControl(control_id="ctl-pam", applied_to_asset_ids=["a-jenkins-01"])],
+    )
+    edge = _edge(result, "a-jenkins-01:admin", "a-app-01:user")
+    assert edge.probability == pytest.approx(0.75 * 0.25)
+    assert "ctl-pam" in edge.blocked_by_control_ids
+
+
+def test_a_control_that_touches_neither_end_does_nothing(graph, catalog):
+    result = apply_controls(
+        graph, catalog, [AppliedControl(control_id="ctl-pam", applied_to_asset_ids=["a-file-01"])]
+    )
+    assert result.model_dump() == graph.model_dump()
+
+
+def test_controls_stack_multiplicatively(graph, catalog):
+    """ctl-segment-ci (70% on T1210) plus a second blocker on the same edge:
+    0.6 * 0.3 * 0.5."""
+    extra = _catalog_entry(catalog, "ctl-segment-ci").model_copy(
+        update={"control_id": "ctl-second", "effectiveness": 0.5}
+    )
+    result = apply_controls(
+        graph,
+        [*catalog, extra],
+        [
+            AppliedControl(control_id="ctl-segment-ci", applied_to_asset_ids=["a-jenkins-01"]),
+            AppliedControl(control_id="ctl-second", applied_to_asset_ids=["a-jenkins-01"]),
+        ],
+    )
+    edge = _edge(result, "a-app-01:user", "a-jenkins-01:admin")
+    assert edge.probability == pytest.approx(0.6 * 0.3 * 0.5)
+    assert edge.blocked_by_control_ids == ["ctl-segment-ci", "ctl-second"]
+
+
+def test_a_control_already_priced_into_the_baseline_is_not_charged_twice(graph, catalog):
+    """ctl-edr is already on ws-eng-01 in the snapshot, so build_graph has
+    already discounted that edge. Buying it again must change nothing."""
+    edge_before = _edge(graph, "a-vpn-01:admin", "a-ws-02:user")
+    assert edge_before.blocked_by_control_ids == ["ctl-edr"]
+
+    result = apply_controls(
+        graph, catalog, [AppliedControl(control_id="ctl-edr", applied_to_asset_ids=["a-ws-02"])]
+    )
+    edge_after = _edge(result, "a-vpn-01:admin", "a-ws-02:user")
+    assert edge_after.probability == pytest.approx(edge_before.probability)
+    assert edge_after.blocked_by_control_ids == ["ctl-edr"]
+
+
+def test_a_snapshot_only_control_falls_back_to_the_module_table(graph):
+    """ctl-edr is in no catalog. EXISTING_CONTROL_EFFECTS knows it blocks T1078
+    at 40%, and that is what an empty catalog should still get you."""
+    result = apply_controls(
+        graph, [], [AppliedControl(control_id="ctl-edr", applied_to_asset_ids=["a-jenkins-01"])]
+    )
+    edge = _edge(result, "a-jenkins-01:admin", "a-app-01:user")
+    assert edge.probability == pytest.approx(0.75 * 0.6)
+
+
+def test_the_catalog_wins_over_the_module_table(graph, catalog):
+    """The catalog is the priced thing being chosen between, so its numbers win."""
+    override = _catalog_entry(catalog, "ctl-pam").model_copy(
+        update={"control_id": "ctl-edr", "blocks_technique_ids": ["T1078"], "effectiveness": 0.9}
+    )
+    result = apply_controls(
+        graph,
+        [override],
+        [AppliedControl(control_id="ctl-edr", applied_to_asset_ids=["a-jenkins-01"])],
+    )
+    edge = _edge(result, "a-jenkins-01:admin", "a-app-01:user")
+    assert edge.probability == pytest.approx(0.75 * 0.1)
+
+
+def test_an_unknown_control_is_ignored_and_announced(graph, catalog):
+    with pytest.warns(RuntimeWarning, match="no effect data"):
+        result = apply_controls(
+            graph,
+            catalog,
+            [AppliedControl(control_id="ctl-imaginary", applied_to_asset_ids=["a-web-01"])],
+        )
+    assert result.model_dump() == graph.model_dump()
+
+
+def test_a_predicate_control_matches_when_findings_are_supplied(graph, catalog, snapshot):
+    """ctl-patch-kev is 'kev==true' at 85%. f-001 is in KEV; the credential
+    reuse edge has no finding behind it at all."""
+    result = apply_controls(
+        graph,
+        catalog,
+        [
+            AppliedControl(
+                control_id="ctl-patch-kev", applied_to_asset_ids=["a-web-01", "a-app-01"]
+            )
+        ],
+        findings=snapshot.findings,
+    )
+    kev_edge = _edge(result, "internet:none", "a-web-01:user")
+    assert kev_edge.enabler_finding_id == "f-001"
+    assert kev_edge.probability == pytest.approx(0.94 * 0.15)
+    assert "ctl-patch-kev" in kev_edge.blocked_by_control_ids
+
+    reuse = _edge(result, "a-jenkins-01:admin", "a-app-01:user")
+    assert reuse.probability == pytest.approx(
+        _edge(graph, "a-jenkins-01:admin", "a-app-01:user").probability
+    )
+
+
+def test_a_predicate_control_without_findings_says_so(graph, catalog):
+    """The frozen signature has no way to reach a Finding, so a predicate-only
+    control cannot be evaluated. It must not silently pretend to work."""
+    with pytest.warns(RuntimeWarning, match="finding predicate"):
+        result = apply_controls(
+            graph,
+            catalog,
+            [AppliedControl(control_id="ctl-patch-kev", applied_to_asset_ids=["a-web-01"])],
+        )
+    assert result.model_dump() == graph.model_dump()
+
+
+def test_applying_nothing_still_returns_a_new_graph(graph, catalog):
+    result = apply_controls(graph, catalog, [])
+    assert result is not graph
+    assert result.model_dump() == graph.model_dump()
+
+
+def test_the_result_can_be_fed_straight_back_into_analyze_paths(graph, catalog, snapshot, paths):
+    """What the optimizer actually does: cut the choke point, re-measure."""
+    result = apply_controls(
+        graph,
+        catalog,
+        [AppliedControl(control_id="ctl-segment-ci", applied_to_asset_ids=["a-jenkins-01"])],
+    )
+    after = analyze_paths(result, snapshot)
+    before_risk = {r.node_id: r.compromise_probability for r in paths.crown_jewel_reach}
+    after_risk = {r.node_id: r.compromise_probability for r in after.crown_jewel_reach}
+    assert all(after_risk[k] <= before_risk[k] for k in before_risk)
+    assert after_risk["a-db-fin:data_admin"] < before_risk["a-db-fin:data_admin"]
+
+
+def test_apply_controls_is_deterministic(graph, catalog):
+    applications = [AppliedControl(control_id="ctl-waf", applied_to_asset_ids=["a-web-01"])]
+    assert (
+        apply_controls(graph, catalog, applications).model_dump()
+        == apply_controls(graph, catalog, applications).model_dump()
+    )
+
+
+def test_apply_controls_is_fast_enough_for_the_optimizer(large_graph, catalog):
+    """The optimizer calls this thousands of times per portfolio. 1000 sequential
+    calls on a 200-asset graph must land well inside 10 seconds."""
+    assert len(large_graph.edges) > 500, "benchmark graph is too small to be meaningful"
+    applications = [
+        AppliedControl(
+            control_id="ctl-waf", applied_to_asset_ids=[f"a{i}" for i in range(0, 200, 4)]
+        ),
+        AppliedControl(
+            control_id="ctl-pam", applied_to_asset_ids=[f"a{i}" for i in range(1, 200, 4)]
+        ),
+        AppliedControl(
+            control_id="ctl-segment-ci", applied_to_asset_ids=[f"a{i}" for i in range(2, 200, 4)]
+        ),
+    ]
+    started = time.perf_counter()
+    for _ in range(1000):
+        apply_controls(large_graph, catalog, applications)
+    elapsed = time.perf_counter() - started
+    assert elapsed < 10.0, f"1000 apply_controls calls took {elapsed:.2f}s"

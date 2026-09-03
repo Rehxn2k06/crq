@@ -1005,7 +1005,162 @@ def analyze_paths(graph: AttackGraph, snapshot: Snapshot) -> PathAnalysis:
     )
 
 
-def apply_controls(graph: AttackGraph, catalog: list[ControlCatalogEntry],
-                   applications: list[AppliedControl]) -> AttackGraph:
-    """MUST be pure. Return a new graph. Called thousands of times by the optimizer."""
-    raise NotImplementedError
+def _control_effect(
+    control_id: str, catalog_by_id: dict[str, ControlCatalogEntry]
+) -> tuple[frozenset[str], str | None, float] | None:
+    """(techniques, predicate, effectiveness) for one control, or None if nobody
+    has told us what it does.
+
+    The catalog wins, because that is the priced thing the optimizer is choosing
+    between. EXISTING_CONTROL_EFFECTS is the fallback for controls that are
+    already in the Snapshot but never appear in the catalog -- ctl-edr is the
+    one in the demo data. An id in neither is ignored rather than guessed at,
+    the same way build_graph treats it.
+    """
+    entry = catalog_by_id.get(control_id)
+    if entry is not None:
+        return (
+            frozenset(entry.blocks_technique_ids),
+            entry.blocks_finding_predicate,
+            float(entry.effectiveness),
+        )
+    fallback = EXISTING_CONTROL_EFFECTS.get(control_id)
+    if fallback is not None:
+        return (
+            frozenset(fallback["techniques"]),
+            fallback["predicate"],
+            float(fallback["effectiveness"]),
+        )
+    return None
+
+
+def apply_controls(
+    graph: AttackGraph,
+    catalog: list[ControlCatalogEntry],
+    applications: list[AppliedControl],
+    *,
+    findings: list[Finding] | None = None,
+) -> AttackGraph:
+    """MUST be pure. Return a new graph. Called thousands of times by the optimizer.
+
+    A control blunts an edge when it is applied to either end of that action and
+    it covers the action -- by MITRE technique, or by its finding predicate
+    matching the edge's enabling finding. Matching controls stack multiplicatively:
+    ``probability *= (1 - effectiveness)`` each, which is the same arithmetic
+    build_graph already applies for controls the org has in place.
+
+    A control already named in an edge's ``blocked_by_control_ids`` is skipped.
+    Its effect is priced into the baseline probability, and charging for it twice
+    would let the optimizer buy a discount it already has.
+
+    Purity and cost. The input graph is never touched. The result gets its own
+    lists -- a caller cannot append to the copy's nodes and find them on the
+    original -- but an edge that no control touched is carried over as the same
+    object, and so are the nodes. New spine, shared leaves: that is what keeps
+    this cheap enough to sit in the optimizer's inner loop, and it holds because
+    artifacts are never edited in place (see the README).
+
+    Two things worth knowing at the call site:
+
+    * ``findings`` is an optional extra. The positional signature in
+      FUNCTIONS.md is unchanged, but a predicate control such as ctl-patch-kev
+      ('kev==true') needs the finding behind the edge to decide, and the frozen
+      signature has no way to reach one. Pass the snapshot's findings and
+      predicates are evaluated; leave it out and predicate-only controls match
+      nothing and say so. Raise it with the team if the signature should grow.
+    * The result keeps the input's ``graph_id``. It is an in-memory candidate,
+      not a new stored artifact. If a caller persists one, it should re-id it.
+    """
+    catalog_by_id = {c.control_id: c for c in catalog}
+    findings_by_id = {f.finding_id: f for f in findings} if findings is not None else None
+
+    # asset_id -> [(control_id, techniques, predicate, effectiveness)]
+    effects_by_asset: dict[str, list[tuple[str, frozenset[str], str | None, float]]] = {}
+    unknown: list[str] = []
+    blind_predicates: list[str] = []
+    for application in applications:
+        effect = _control_effect(application.control_id, catalog_by_id)
+        if effect is None:
+            unknown.append(application.control_id)
+            continue
+        techniques, predicate, effectiveness = effect
+        if effectiveness <= 0.0 or (not techniques and predicate is None):
+            continue
+        if predicate is not None and findings_by_id is None:
+            blind_predicates.append(application.control_id)
+            if not techniques:
+                continue
+        for asset_id in application.applied_to_asset_ids:
+            effects_by_asset.setdefault(asset_id, []).append(
+                (application.control_id, techniques, predicate, effectiveness)
+            )
+
+    if unknown:
+        warnings.warn(
+            f"apply_controls ignored control ids it has no effect data for: "
+            f"{sorted(set(unknown))}. Add them to the catalog or to "
+            f"EXISTING_CONTROL_EFFECTS.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+    if blind_predicates:
+        warnings.warn(
+            f"apply_controls cannot evaluate the finding predicate on "
+            f"{sorted(set(blind_predicates))} without the snapshot's findings; "
+            f"pass findings=snapshot.findings. Those controls matched on technique only.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+
+    asset_of = {n.node_id: n.asset_id for n in graph.nodes}
+    new_edges: list[GraphEdge] = []
+    for edge in graph.edges:
+        source_asset = asset_of.get(edge.source_node_id)
+        target_asset = asset_of.get(edge.target_node_id)
+        candidates = effects_by_asset.get(target_asset or "", ())
+        if source_asset != target_asset:
+            candidates = (*candidates, *effects_by_asset.get(source_asset or "", ()))
+        if not candidates:
+            new_edges.append(edge)
+            continue
+
+        finding = (
+            findings_by_id.get(edge.enabler_finding_id)
+            if findings_by_id is not None and edge.enabler_finding_id is not None
+            else None
+        )
+        seen = set(edge.blocked_by_control_ids)
+        multiplier = 1.0
+        newly_blocked: list[str] = []
+        for control_id, techniques, predicate, effectiveness in candidates:
+            if control_id in seen:
+                continue
+            if not (
+                (edge.technique_id is not None and edge.technique_id in techniques)
+                or _predicate_matches(predicate, finding)
+            ):
+                continue
+            seen.add(control_id)
+            newly_blocked.append(control_id)
+            multiplier *= 1.0 - effectiveness
+
+        if not newly_blocked:
+            new_edges.append(edge)
+            continue
+        new_edges.append(
+            edge.model_copy(
+                update={
+                    "probability": round(max(edge.probability * multiplier, 0.0), 6),
+                    "blocked_by_control_ids": [*edge.blocked_by_control_ids, *newly_blocked],
+                }
+            )
+        )
+
+    return graph.model_copy(
+        update={
+            "edges": new_edges,
+            "nodes": list(graph.nodes),
+            "entry_node_ids": list(graph.entry_node_ids),
+            "crown_jewel_node_ids": list(graph.crown_jewel_node_ids),
+        }
+    )
